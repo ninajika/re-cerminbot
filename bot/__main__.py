@@ -136,8 +136,7 @@ def log(update, context):
     sendLogFile(context.bot, update)
 
 
-def bot_help(update, context):
-    help_string_telegraph = f'''<br>
+help_string_telegraph = f'''<br>
 <b>/{BotCommands.HelpCommand}</b>: Untuk mendapatkan pesan ini
 <br><br>
 <b>/{BotCommands.MirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring tautan ke Google Drive.
@@ -178,9 +177,15 @@ def bot_help(update, context):
 <br><br>
 <b>/{BotCommands.StatsCommand}</b>: Tampilkan Statistik Mesin The Bot diselenggarakan
 '''
+help = Telegraph(access_token=telegraph_token).create_page(
+        title='pencarian re-cerminbot',
+        author_name='re-cerminbot',
+        author_url='https://github.com/Ncode2014/re-cerminbot',
+        html_content=help_string_telegraph,
+    )["path"]
 
-    help_string = f'''
-/{BotCommands.PingCommand}: Check how long it takes to Ping the Bot
+help_string = f'''
+/{BotCommands.PingCommand}: Periksa berapa lama waktu yang dibutuhkan untuk melakukan Ping Bot
 
 /{BotCommands.AuthorizeCommand}: Otorisasi obrolan atau pengguna untuk menggunakan BOT (hanya dapat dipanggil oleh pemilik & sudo bot)
 
@@ -204,8 +209,8 @@ def bot_help(update, context):
 
 /{BotCommands.TsHelpCommand}: Dapatkan bantuan untuk modul pencarian Torrent
 '''
-    help = Telegraph(access_token=telegraph_token).create_page(title = 'bantuan re-cerminbot', author_name='re-cerminbot',
-                                                               author_url='https://github.com/Ncode2014/re-cerminbot', html_content=help_string_telegraph)["path"]
+
+def bot_help(update, context):
     button = button_build.ButtonMaker()
     button.buildbutton("Perintah lainnya", f"https://telegra.ph/{help}")
     reply_markup = InlineKeyboardMarkup(button.build_menu(1))
