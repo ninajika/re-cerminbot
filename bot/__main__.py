@@ -54,6 +54,7 @@ from .modules import (
     torrent_search,
     usage,
     watch,
+    leech_settings,
 )
 
 now = datetime.now(pytz.timezone("Asia/Jakarta"))

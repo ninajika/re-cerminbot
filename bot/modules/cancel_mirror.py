@@ -50,6 +50,8 @@ def cancel_mirror(update, context):
         sendMessage("Pengarsipan Sedang Berlangsung, Anda Tidak Dapat Membatalkannya.", context.bot, update)
     elif dl.status() == MirrorStatus.STATUS_EXTRACTING:
         sendMessage("Ekstrak Sedang Berlangsung, Anda Tidak Dapat Membatalkannya.", context.bot, update)
+    elif dl.status() == MirrorStatus.STATUS_SPLITTING:
+        sendMessage("Split Sedang Berlangsung, Anda Tidak Dapat Membatalkannya.", context.bot, update)
     else:
         dl.download().cancel_download()
         sleep(3)  # incase of any error with ondownloaderror listener

@@ -39,6 +39,9 @@ from bot.helper.telegram_helper import button_build
 from bot.helper.telegram_helper.message_utils import *
 
 LOGGER = logging.getLogger(__name__)
+logging.getLogger('qbittorrentapi').setLevel(logging.ERROR)
+logging.getLogger('requests').setLevel(logging.ERROR)
+logging.getLogger('urllib3').setLevel(logging.ERROR)
 
 
 class qbittorrent:
@@ -65,11 +68,12 @@ class qbittorrent:
                 self.ext_hash = get_hash_magnet(link)
             tor_info = self.client.torrents_info(torrent_hashes=self.ext_hash)
             if len(tor_info) > 0:
-                sendMessage(
-                    "Torrent ini sudah ada dalam daftar.", listener.bot, listener.update
-                )
-                self.client.auth_log_out()
-                return
+                if tor_info[0].state == "pausedDL":
+                    self.client.torrents_delete(torrent_hashes=self.ext_hash)
+                else:
+                    sendMessage("Torrent ini sudah ada dalam daftar.", listener.bot, listener.update)
+                    self.client.auth_log_out()
+                    return
             if is_file:
                 op = self.client.torrents_add(torrent_files=[link], save_path=dire)
                 os.remove(link)
@@ -141,10 +145,8 @@ class qbittorrent:
                                 time.sleep(1)
                             else:
                                 deleteMessage(listener.bot, meta)
-                                break
-                        except:
-                            deleteMessage(listener.bot, meta)
-                            return False
+                                return False
+                time.sleep(0.5)
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 for n in str(self.ext_hash):
                     if n.isdigit():
@@ -189,16 +191,9 @@ class qbittorrent:
             tor_info = tor_info[0]
             if tor_info.state == "metaDL":
                 self.stalled_time = time.time()
-                if (
-                    time.time() - self.meta_time >= 999999999
-                ):  # timeout while downloading metadata
-                    self.client.torrents_pause(torrent_hashes=self.ext_hash)
-                    time.sleep(0.3)
-                    self.listener.onDownloadError("Dead Torrent!")
-                    self.client.torrents_delete(torrent_hashes=self.ext_hash)
-                    self.client.auth_log_out()
+                if time.time() - self.meta_time >= 999999999: # timeout while downloading metadata
                     self.updater.cancel()
-                    return
+                    self._extracted_from_update_13("Dead Torrent!")
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
                 if (
@@ -216,6 +211,7 @@ class qbittorrent:
                     )
                     self.checked = True
                     if result:
+                        self.updater.cancel()
                         self.client.torrents_pause(torrent_hashes=self.ext_hash)
                         time.sleep(0.3)
                         self.listener.onDownloadError(
@@ -223,49 +219,48 @@ class qbittorrent:
                         )
                         self.client.torrents_delete(torrent_hashes=self.ext_hash)
                         self.client.auth_log_out()
-                        self.updater.cancel()
-                        return
             elif tor_info.state == "stalledDL":
-                if (
-                    time.time() - self.stalled_time >= 999999999
-                ):  # timeout after downloading metadata
-                    self.client.torrents_pause(torrent_hashes=self.ext_hash)
-                    time.sleep(0.3)
-                    self.listener.onDownloadError("Dead Torrent!")
-                    self.client.torrents_delete(torrent_hashes=self.ext_hash)
-                    self.client.auth_log_out()
+                if time.time() - self.stalled_time >= 999999999: # timeout after downloading metadata
                     self.updater.cancel()
-                    return
+                    self._extracted_from_update_13("Dead Torrent!")
             elif tor_info.state == "error":
-                self.client.torrents_pause(torrent_hashes=self.ext_hash)
-                time.sleep(0.3)
-                self.listener.onDownloadError("Error. IDK why, report in support group")
-                self.client.torrents_delete(torrent_hashes=self.ext_hash)
-                self.client.auth_log_out()
                 self.updater.cancel()
-                return
+                self._extracted_from_update_13("Error. IDK why, report in support group")
             elif tor_info.state == "uploading" or tor_info.state.lower().endswith("up"):
-                self._extracted_from_update_55()
+                self.updater.cancel()
+                self._extracted_from__extracted_from_update_55_60()
         except:
             self.updater.cancel()
 
+    def _extracted_from_update_13(self, arg0):
+        self.client.torrents_pause(torrent_hashes=self.ext_hash)
+        time.sleep(0.3)
+        self.listener.onDownloadError(arg0)
+        self.client.torrents_delete(torrent_hashes=self.ext_hash)
+        self.client.auth_log_out()
+
+    # TODO Rename this here and in `update` and `_extracted_from_update_55`
     def _extracted_from_update_55(self):
+        self._extracted_from__extracted_from_update_55_60()
+        self.updater.cancel()
+
+    # TODO Rename this here and in `update` and `_extracted_from_update_55`
+    def _extracted_from__extracted_from_update_55_60(self):
         self.client.torrents_pause(torrent_hashes=self.ext_hash)
         if self.qbitsel:
-            for dirpath, subdir, files in os.walk(f"{self.dire}", topdown=False):
+            for dirpath, subdir, files in os.walk(f'{self.dire}', topdown=False):
                 for file in files:
-                    if fnmatch(file, "*.!qB"):
+                    if fnmatch(file, '*.!qB'):
                         os.remove(os.path.join(dirpath, file))
                 for folder in subdir:
-                    if fnmatch(folder, ".unwanted"):
+                    if fnmatch(folder, '.unwanted'):
                         shutil.rmtree(os.path.join(dirpath, folder))
-            for dirpath, subdir, files in os.walk(f"{self.dire}", topdown=False):
+            for dirpath, subdir, files in os.walk(f'{self.dire}', topdown=False):
                 if not os.listdir(dirpath):
                     os.rmdir(dirpath)
         self.listener.onDownloadComplete()
         self.client.torrents_delete(torrent_hashes=self.ext_hash)
         self.client.auth_log_out()
-        self.updater.cancel()
 
 
 def get_confirm(update, context):
@@ -274,19 +269,18 @@ def get_confirm(update, context):
     data = query.data
     data = data.split(" ")
     qdl = getDownloadByGid(data[1])
-    if qdl is not None:
-        if user_id != qdl.listener.message.from_user.id:
-            query.answer(text="Jangan buang waktu Anda!", show_alert=True)
-            return
-        if data[0] == "pin":
-            query.answer(text=data[2], show_alert=True)
-        elif data[0] == "done":
-            query.answer()
-            qdl.client.torrents_resume(torrent_hashes=data[2])
-            sendStatusMessage(qdl.listener.update, qdl.listener.bot)
-            query.message.delete()
-    else:
+    if qdl is None:
         query.answer(text="Tugas ini telah dibatalkan!", show_alert=True)
+        query.message.delete()
+
+    elif user_id != qdl.listener.message.from_user.id:
+        query.answer(text="Jangan buang waktu Anda!", show_alert=True)
+    elif data[0] == "pin":
+        query.answer(text=data[2], show_alert=True)
+    elif data[0] == "done":
+        query.answer()
+        qdl.client.torrents_resume(torrent_hashes=data[2])
+        sendStatusMessage(qdl.listener.update, qdl.listener.bot)
         query.message.delete()
 
 

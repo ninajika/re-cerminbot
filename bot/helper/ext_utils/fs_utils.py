@@ -1,27 +1,34 @@
-import os
-import shutil
 import sys
-import tarfile
-
+import shutil
+import os
+import pathlib
 import magic
+import tarfile
+import subprocess
+import time
 
-from bot import DOWNLOAD_DIR, LOGGER, aria2, get_client
+from PIL import Image
+from hachoir.parser import createParser
+from hachoir.metadata import extractMetadata
+from fsplit.filesplit import Filesplit
 
 from .exceptions import NotSupportedExtractionArchive
+from bot import aria2, LOGGER, DOWNLOAD_DIR, get_client, TG_SPLIT_SIZE
 
+VIDEO_SUFFIXES = ("M4V", "MP4", "MOV", "FLV", "WMV", "3GP", "MPG", "WEBM", "MKV", "AVI")
+
+fs = Filesplit()
 
 def clean_download(path: str):
     if os.path.exists(path):
         LOGGER.info(f"Cleaning download: {path}")
         shutil.rmtree(path)
 
-
 def start_cleanup():
     try:
         shutil.rmtree(DOWNLOAD_DIR)
     except FileNotFoundError:
         pass
-
 
 def clean_all():
     aria2.remove_all(True)
@@ -31,7 +38,6 @@ def clean_all():
         shutil.rmtree(DOWNLOAD_DIR)
     except FileNotFoundError:
         pass
-
 
 def exit_clean_up(signal, frame):
     try:
@@ -44,7 +50,6 @@ def exit_clean_up(signal, frame):
         LOGGER.warning("Force Exiting before the cleanup finishes!")
         sys.exit(1)
 
-
 def get_path_size(path):
     if os.path.isfile(path):
         return os.path.getsize(path)
@@ -55,7 +60,6 @@ def get_path_size(path):
             total_size += os.path.getsize(abs_path)
     return total_size
 
-
 def tar(org_path):
     tar_path = org_path + ".tar"
     #path = pathlib.PurePath(org_path)
@@ -65,7 +69,6 @@ def tar(org_path):
     tar.close()
     return tar_path
 
-
 def zip(name, path):
     root_dir = os.path.dirname(path)
     base_dir = os.path.basename(path.strip(os.sep))
@@ -73,7 +76,6 @@ def zip(name, path):
     zip_path = shutil.move(zip_file, root_dir)
     LOGGER.info(f"Zip: {zip_path}")
     return zip_path
-
 
 def get_base_name(orig_path: str):
     if orig_path.endswith(".tar.bz2"):
@@ -155,9 +157,57 @@ def get_base_name(orig_path: str):
             'File format not supported for extraction'
         )
 
-
 def get_mime_type(file_path):
     mime = magic.Magic(mime=True)
     mime_type = mime.from_file(file_path)
     mime_type = mime_type or "text/plain"
     return mime_type
+
+def take_ss(video_file, duration):
+    des_dir = 'Thumbnails'
+    if not os.path.exists(des_dir):
+        os.mkdir(des_dir)
+    des_dir = os.path.join(des_dir, f"{time.time()}.jpg")
+    duration = int(duration) / 2
+    subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-ss", str(duration),
+                    "-i", video_file, "-vframes", "1", des_dir])
+    Image.open(des_dir).convert("RGB").save(des_dir)
+    img = Image.open(des_dir)
+    w, h = img.size
+    img.resize((320, h))
+    img.save(des_dir, "JPEG")
+    if os.path.lexists(des_dir):
+        return des_dir, 320, h
+    else:
+        return None, 0, 0
+
+def split(path, size, split_size, start_time=0, i=1):
+    ftype = get_mime_type(path)
+    ftype = ftype.split("/")[0]
+    ftype = ftype.lower().strip()
+    out_dir = os.path.dirname(path)
+    base_name = os.path.basename(path)
+    if ftype == "video" or base_name.upper().endswith(VIDEO_SUFFIXES):
+        base_name, extension = os.path.splitext(path)
+        metadata = extractMetadata(createParser(path))
+        total_duration = metadata.get('duration').seconds - 5
+        while start_time < total_duration:
+            parted_name = "{}.part{}{}".format(str(base_name), str(i).zfill(2), str(extension))
+            out_path = os.path.join(out_dir, parted_name)
+            subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", 
+                            path, "-ss", str(start_time), "-fs", str(split_size),
+                            "-strict", "-2", "-c", "copy", out_path])
+            out_size = get_path_size(out_path)
+            if out_size > TG_SPLIT_SIZE:
+                dif = out_size - TG_SPLIT_SIZE
+                split_size = split_size - dif
+                os.remove(out_path)
+                return split(path, size, split_size, start_time, i)
+            metadata = extractMetadata(createParser(out_path))
+            start_time = start_time + metadata.get('duration').seconds - 5
+            i = i + 1
+    else:
+        #subprocess.run(["split", "--numeric-suffixes=1", "--suffix-length=5", f"--bytes={split_size}", path, out_dir])
+        fs.split(file=path, split_size=split_size, output_dir=out_dir)
+        csv_path = os.path.join(out_dir, "fs_manifest.csv")
+        os.remove(csv_path)

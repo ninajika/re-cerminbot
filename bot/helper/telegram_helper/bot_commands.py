@@ -35,6 +35,19 @@ class _BotCommands:
         self.ShellCommand = 'cmd'
         self.ExecHelpCommand = 'tolongexec'
         self.TsHelpCommand = 'bantuants'
+        self.LeechSetCommand = 'setleech'
+        self.SetThumbCommand = 'setthumb'
+        self.LeechCommand = 'leech'
+        self.TarLeechCommand = 'tarleech'
+        self.UnzipLeechCommand = 'unzipleech'
+        self.ZipLeechCommand = 'zipleech'
+        self.QbLeechCommand = 'qbleech'
+        self.QbTarLeechCommand = 'qbtarleech'
+        self.QbUnzipLeechCommand = 'qbunzipleech'
+        self.QbZipLeechCommand = 'qbzipleech'
+        self.LeechWatchCommand = 'leechwatch'
+        self.LeechTarWatchCommand = 'leechtarwatch'
+        self.LeechZipWatchCommand = 'leechzipwatch'
 
 
 BotCommands = _BotCommands()
