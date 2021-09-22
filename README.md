@@ -189,7 +189,7 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `HEROKU_APP_NAME`: (Only if you deploying on Heroku) Your Heroku app name.
 - `IGNORE_PENDING_REQUESTS`: If you want the bot to ignore pending requests after it restarts, set this to `True`.
 - `STATUS_LIMIT`: Limit the no. of tasks shown in status message with button. (**NOTE**: Recommended limit is `4` tasks at max).
-- `IS_VPS`: (Only for VPS) Don't set this to `True` even if you are using VPS, unless facing error with web server. Also go to start.sh and replace `$PORT` by `80` or any other port you want to use.
+- `IS_VPS`: (Only for VPS) Don't set this to `True` even if you are using VPS, unless facing error with web server.
 - `SERVER_PORT`: Only For VPS even if `IS_VPS` is `False` --> Base URL Port
 - `BASE_URL_OF_BOT`: (Required for Heroku to avoid sleep/idling) Valid BASE URL of app where the bot is deployed. Format of URL should be `http://myip` (where `myip` is the IP/Domain of your bot) or if you have chosen other port than `80` then fill in this format `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: Do not put slash at the end), still got idling? You can use http://cron-job.org to ping your Heroku app.
 - `IMAGE_URL`: Show Image/Logo in /start message, Use telegra.ph or any direct link image
