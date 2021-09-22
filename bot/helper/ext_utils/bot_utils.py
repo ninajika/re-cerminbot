@@ -159,12 +159,12 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
                 except:
                     pass
                 msg += f"\n<b>Pengguna:</b> <a href='tg://user?id={download.message.from_user.id}'>{download.message.from_user.first_name}</a>"
-                msg += f"\n<b>To Stop:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>Untuk berhenti:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
         if STATUS_LIMIT is not None and dick_no > STATUS_LIMIT:
-            msg += f"<b>Page:</b> {PAGE_NO}/{pages} | <b>Tasks:</b> {dick_no}\n"
+            msg += f"<b>Halaman:</b> {PAGE_NO}/{pages} | <b>Tugas:</b> {dick_no}\n"
             buttons = button_build.ButtonMaker()
             buttons.sbutton("Sebelumnya", "pre")
             buttons.sbutton("Selanjutnya", "nex")
