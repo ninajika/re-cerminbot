@@ -426,9 +426,7 @@ def fichier(link: str) -> str:  # sourcery no-metrics
                     f"ERROR: 1fichier berada pada batas. Tunggu sebentar {numbers[0]} menit."
                 )
         elif "protect access" in str(str_2).lower():
-            raise DirectDownloadLinkException(
-                "ERROR: Tautan ini memerlukan kata sandi!\n\n<b>Tautan ini memerlukan kata sandi!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/mirror https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!"
-            )
+          raise DirectDownloadLinkException(f"ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/{BotCommands.MirrorCommand} https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
         else:
             raise DirectDownloadLinkException(
                 "ERROR: Kesalahan mencoba menghasilkan tautan langsung dari 1fichier!"

@@ -156,6 +156,22 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.QbUnzipMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Google Drive
 <br><br>
+<b>/{BotCommands.LeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.TarLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.tar). [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.ZipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.zip). [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.UnzipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstraklah. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.QbLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstraklah. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.QbTarLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.tar) menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.QbZipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau Tautan langsung dan mengunggahnya sebagai (.zip) menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
+<b>/{BotCommands.QbUnzipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstrak menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<br><br>
 <b>/{BotCommands.CloneCommand}</b> [drive_url]: Salin file/folder ke Google Drive
 <br><br>
 <b>/{BotCommands.CountCommand}</b> [drive_url]: Hitung file/folder dari Google Drive Links
@@ -167,6 +183,16 @@ help_string_telegraph = f'''<br>
 <b>/{BotCommands.TarWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui yt-dlp/youtube-dl dan tar sebelum mengunggah
 <br><br>
 <b>/{BotCommands.ZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui youtube-dl atau yt-dlp dan zip sebelum mengunggah
+<br><br>
+<b>/{BotCommands.LeechWatchCommand}</b> Leech melalui youtube-dl
+<br><br>
+<b>/{BotCommands.LeechTarWatchCommand}</b> Lintah melalui youtube-dl dan tar sebelum mengunggah
+<br><br>
+<b>/{BotCommands.LeechZipWatchCommand}</b> Lintah melalui youtube-dl dan zip sebelum mengunggah
+<br><br>
+<b>/{BotCommands.LeechSetCommand}</b> Pengaruran Leech
+<br><br>
+<b>/{BotCommands.SetThumbCommand}</b> Balas ke foto untuk mengaturnya sebagai thumbnail untuk unggahan berikutnya 
 <br><br>
 <b>/{BotCommands.CancelMirror}</b>: Balas pesan di mana unduhan dimulai dan unduhan itu akan dibatalkan
 <br><br>

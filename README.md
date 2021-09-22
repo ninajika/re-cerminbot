@@ -5,7 +5,6 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 # re-mirrorbot
 ![GitHub forks](https://img.shields.io/github/forks/Ncode2014/re-mirrorbot?color=green&style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Ncode2014/re-mirrorbot)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/Ncode2014/re-mirrorbot)
 ![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Ncode2014/re-mirrorbot)
 ![GitHub watchers](https://img.shields.io/github/watchers/Ncode2014/re-mirrorbot)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Ncode2014/re-mirrorbot?color=red)
@@ -14,11 +13,8 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/narima/megaria?label=Docker%20Pull)
 
-**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
+**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring/leeecher files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
 
-# Features:
-<details>
-    <summary><b>Click Here For More Details</b></summary>
 
 ## what some different feature rather the original [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
 - adding more direct link generator
@@ -32,6 +28,8 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 
 ## Additional Features On [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
 - qBittorrent
+- Leach supported
+- Thumbnail supported
 - Size limiting for Torrent/Direct, Tar/Unzip, Mega and clone
 - Stop duplicates for all tasks except for qBittorrent and youtube-dl tasks 
 - Tar/Unzip G-Drive link 
@@ -195,7 +193,9 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `SERVER_PORT`: Only For VPS even if `IS_VPS` is `False` --> Base URL Port
 - `BASE_URL_OF_BOT`: (Required for Heroku to avoid sleep/idling) Valid BASE URL of app where the bot is deployed. Format of URL should be `http://myip` (where `myip` is the IP/Domain of your bot) or if you have chosen other port than `80` then fill in this format `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: Do not put slash at the end), still got idling? You can use http://cron-job.org to ping your Heroku app.
 - `IMAGE_URL`: Show Image/Logo in /start message, Use telegra.ph or any direct link image
-- `RECURSIVE_SEARCH`: Set this to `True` to search in sub-folders with `/list` (**NOTE**: This will only work with shared-drive root ID. Folder IDs are not compatible with it.)
+- `RECURSIVE_SEARCH`: Set this to `True` to search in sub-folders with `/list` (**NOTE**: This will only work with shared-drive ID or fill `root` for main drive. Folder IDs are not compatible with it.)
+- `TG_SPLIT_SIZE`: Size Telegram split, leave it empty for max size `2GB`
+- `AS_DOCUMENT`: Should all the upload to telegram be forced as documents or not, set it `True` or `False`
 - `SHORTENER_API`: Fill your Shortener API key if you are using Shortener.
 - `SHORTENER`: if you want to use Shortener in G-Drive and index link, fill Shortener URL here. Examples:
 ```
