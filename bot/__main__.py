@@ -186,9 +186,9 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.LeechWatchCommand}</b> Leech melalui youtube-dl
 <br><br>
-<b>/{BotCommands.LeechTarWatchCommand}</b> Lintah melalui youtube-dl dan tar sebelum mengunggah
+<b>/{BotCommands.LeechTarWatchCommand}</b> Leech melalui youtube-dl dan tar sebelum mengunggah
 <br><br>
-<b>/{BotCommands.LeechZipWatchCommand}</b> Lintah melalui youtube-dl dan zip sebelum mengunggah
+<b>/{BotCommands.LeechZipWatchCommand}</b> Leech melalui youtube-dl dan zip sebelum mengunggah
 <br><br>
 <b>/{BotCommands.LeechSetCommand}</b> Pengaruran Leech
 <br><br>
