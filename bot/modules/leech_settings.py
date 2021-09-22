@@ -48,15 +48,17 @@ def setLeechType(update, context):
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
     elif data[0] == "doc":
-        if user_id in AS_DOC_USERS:
+        if (
+            user_id in AS_DOC_USERS
+            or user_id not in AS_MEDIA_USERS
+            and AS_DOCUMENT
+        ):
             query.answer(text="Already As Document!", show_alert=True)
         elif user_id in AS_MEDIA_USERS:
             AS_MEDIA_USERS.remove(user_id)
             AS_DOC_USERS.add(user_id)
             query.answer(text="Done!", show_alert=True)
-        elif AS_DOCUMENT:
-            query.answer(text="Already As Document!", show_alert=True)
-        elif not AS_DOCUMENT:
+        else:
             AS_DOC_USERS.add(user_id)
             query.answer(text="Done!", show_alert=True)
     elif data[0] == "med":
@@ -64,13 +66,11 @@ def setLeechType(update, context):
             AS_DOC_USERS.remove(user_id)
             AS_MEDIA_USERS.add(user_id)
             query.answer(text="Done!", show_alert=True)
-        elif user_id in AS_MEDIA_USERS:
+        elif user_id in AS_MEDIA_USERS or not AS_DOCUMENT:
             query.answer(text="Already As Media!", show_alert=True)
-        elif AS_DOCUMENT:
+        else:
             AS_MEDIA_USERS.add(user_id)
             query.answer(text="Done!", show_alert=True)
-        elif not AS_DOCUMENT:
-            query.answer(text="Already As Media!", show_alert=True)
     elif data[0] == "thumb":
         path = f"Thumbnails/{user_id}.jpg"
         if os.path.lexists(path):
