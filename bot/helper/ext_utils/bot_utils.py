@@ -139,7 +139,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
                 MirrorStatus.STATUS_EXTRACTING,
                 MirrorStatus.STATUS_SPLITTING,
             ]:
-                msg += f"\n<code>{get_progress_bar_string(download)}</code> {download.progress()}"
+                msg += f"\n<code>{get_progress_bar_string(download)} {download.progress()}</code>"
                 if download.status() == MirrorStatus.STATUS_CLONING:
                     msg += f"\n<b>Kloning:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
@@ -159,7 +159,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
                 except:
                     pass
                 msg += f"\n<b>Pengguna:</b> <a href='tg://user?id={download.message.from_user.id}'>{download.message.from_user.first_name}</a>"
-                msg += f"\n<b>Untuk berhenti:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<b>Untuk membatalkan:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
