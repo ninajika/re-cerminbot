@@ -264,11 +264,11 @@ class MirrorListener(listeners.MirrorListeners):
                 uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
             chat_id = str(self.message.chat.id)
             count = len(files)
-            if OWNER_ID  == int(chat_id):
+            if OWNER_ID  == int(chat_id) and count != 1:
                 msg = f'<b>Nama:</b> <code>{link}</code>\n'
                 msg += f'<b>Total File:</b> {count}'
                 sendMessage(msg, self.bot, self.update)
-            else:
+            elif count != 1:
                 chat_id = chat_id[4:]
                 msg = f"<b>Nama:</b> <a href='https://t.me/c/{chat_id}/{self.uid}'>{link}</a>\n"
                 msg += f'<b>Total File:</b> {count}\n'

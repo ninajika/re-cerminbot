@@ -28,7 +28,7 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 
 ## Additional Features On [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
 - qBittorrent
-- Leach supported
+- Leech supported
 - Thumbnail supported
 - Size limiting for Torrent/Direct, Tar/Unzip, Mega and clone
 - Stop duplicates for all tasks except for qBittorrent and youtube-dl tasks 

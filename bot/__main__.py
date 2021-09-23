@@ -156,21 +156,21 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.QbUnzipMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Google Drive
 <br><br>
-<b>/{BotCommands.LeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.LeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram, Gunakan <b>/{BotCommands.LeechCommand} s</b> untuk memilih file sebelum leeching
 <br><br>
-<b>/{BotCommands.TarLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.tar). [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.TarLeechCommand}</b> [download_url][magnet_link]:  Mulai leeching ke Telegram dan unggah sebagai (.tar)
 <br><br>
-<b>/{BotCommands.ZipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.zip). [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.ZipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan unggah sebagai (.zip)
 <br><br>
-<b>/{BotCommands.UnzipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstraklah. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.UnzipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Telegram
 <br><br>
-<b>/{BotCommands.QbLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstraklah. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.QbLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent, Gunakan <b>/{BotCommands.QbLeechCommand} s</b> untuk memilih file sebelum leeching
 <br><br>
-<b>/{BotCommands.QbTarLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan mengunggahnya sebagai (.tar) menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.QbTarLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan unggah sebagai (.tar)
 <br><br>
-<b>/{BotCommands.QbZipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau Tautan langsung dan mengunggahnya sebagai (.zip) menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.QbZipLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan unggah sebagai (.zip)
 <br><br>
-<b>/{BotCommands.QbUnzipLeechCommand}</b> Perintah ini harus digunakan sebagai balasan ke tautan Magnet, tautan Torrent, atau tautan Langsung dan jika file adalah arsip apa pun, ekstrak menggunakan qBittorrent. [perintah ini akan mengirim SPAM obrolan dan mengirim unduhan file terpisah, jika ada lebih dari satu file, dalam Torrent yang ditentukan]
+<b>/{BotCommands.QbUnzipLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Telegram
 <br><br>
 <b>/{BotCommands.CloneCommand}</b> [drive_url]: Salin file/folder ke Google Drive
 <br><br>
@@ -184,15 +184,15 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.ZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui youtube-dl atau yt-dlp dan zip sebelum mengunggah
 <br><br>
-<b>/{BotCommands.LeechWatchCommand}</b> Leech melalui youtube-dl
+<b>/{BotCommands.LeechWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp
 <br><br>
-<b>/{BotCommands.LeechTarWatchCommand}</b> Leech melalui youtube-dl dan tar sebelum mengunggah
+<b>/{BotCommands.LeechTarWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp dan tar sebelum mengunggah 
 <br><br>
-<b>/{BotCommands.LeechZipWatchCommand}</b> Leech melalui youtube-dl dan zip sebelum mengunggah
+<b>/{BotCommands.LeechZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp dan zip sebelum mengunggah
 <br><br>
 <b>/{BotCommands.LeechSetCommand}</b> Pengaruran Leech
 <br><br>
-<b>/{BotCommands.SetThumbCommand}</b> Balas ke foto untuk mengaturnya sebagai thumbnail untuk unggahan berikutnya 
+<b>/{BotCommands.SetThumbCommand}</b>: Balas foto untuk mengaturnya sebagai Thumbnail
 <br><br>
 <b>/{BotCommands.CancelMirror}</b>: Balas pesan di mana unduhan dimulai dan unduhan itu akan dibatalkan
 <br><br>
