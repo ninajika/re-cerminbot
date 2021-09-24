@@ -193,12 +193,12 @@ class QbitTorrent:
                 if (
                     time.time() - self.meta_time >= 999999999
                 ):  # timeout while downloading metadata
-                    self.updater.cancel()
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
                     self.listener.onDownloadError("Torrent Mati!")
                     self.client.torrents_delete(torrent_hashes=self.ext_hash)
                     self.client.auth_log_out()
+                    self.updater.cancel()
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
                 if (
@@ -216,7 +216,6 @@ class QbitTorrent:
                     )
                     self.checked = True
                     if result:
-                        self.updater.cancel()
                         self.client.torrents_pause(torrent_hashes=self.ext_hash)
                         time.sleep(0.3)
                         self.listener.onDownloadError(
@@ -224,18 +223,18 @@ class QbitTorrent:
                         )
                         self.client.torrents_delete(torrent_hashes=self.ext_hash)
                         self.client.auth_log_out()
+                        self.updater.cancel()
             elif tor_info.state == "stalledDL":
                 if (
                     time.time() - self.stalled_time >= 999999999
                 ):  # timeout after downloading metadata
-                    self.updater.cancel()
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
                     self.listener.onDownloadError("Torrent Mati!")
                     self.client.torrents_delete(torrent_hashes=self.ext_hash)
                     self.client.auth_log_out()
+                    self.updater.cancel()
             elif tor_info.state == "error":
-                self.updater.cancel()
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 time.sleep(0.3)
                 self.listener.onDownloadError(
@@ -243,8 +242,8 @@ class QbitTorrent:
                 )
                 self.client.torrents_delete(torrent_hashes=self.ext_hash)
                 self.client.auth_log_out()
-            elif tor_info.state == "uploading" or tor_info.state.lower().endswith("up"):
                 self.updater.cancel()
+            elif tor_info.state == "uploading" or tor_info.state.lower().endswith("up"):
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 if self.qbitsel:
                     for dirpath, subdir, files in os.walk(
@@ -264,6 +263,7 @@ class QbitTorrent:
                 self.listener.onDownloadComplete()
                 self.client.torrents_delete(torrent_hashes=self.ext_hash)
                 self.client.auth_log_out()
+                self.updater.cancel()
         except:
             self.updater.cancel()
 
