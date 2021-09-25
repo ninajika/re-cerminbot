@@ -301,7 +301,7 @@ class MirrorListener(listeners.MirrorListeners):
                 update_all_messages()
             return
         with download_dict_lock:
-            msg = f"<b>Namafile: </b><code>{download_dict[self.uid].name()}</code>\n<b>Size: </b><code>{size}</code>"
+            msg = f"<b>Namafile: </b><code>{download_dict[self.uid].name()}</code>\n<b>Ukuran: </b><code>{size}</code>"
             if os.path.isdir(
                 f'{DOWNLOAD_DIR}/{self.uid}/{download_dict[self.uid].name()}'
             ):
@@ -352,7 +352,7 @@ class MirrorListener(listeners.MirrorListeners):
             else:
                 uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
             if uname is not None:
-                msg += f"\n\ncc: {uname}"
+                msg += f"\n\nDari: {uname}"
             try:
                 fs_utils.clean_download(download_dict[self.uid].path())
             except FileNotFoundError:
