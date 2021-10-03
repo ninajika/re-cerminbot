@@ -3,6 +3,7 @@ import shutil
 import os
 import pathlib
 import magic
+import math
 import tarfile
 import subprocess
 import time
@@ -18,7 +19,7 @@ VIDEO_SUFFIXES = ("M4V", "MP4", "MOV", "FLV", "WMV", "3GP", "MPG", "WEBM", "MKV"
 
 def clean_download(path: str):
     if os.path.exists(path):
-        LOGGER.info(f"Cleaning download: {path}")
+        LOGGER.info(f"Cleaning Download: {path}")
         shutil.rmtree(path)
 
 def start_cleanup():
@@ -175,9 +176,10 @@ def split(path, size, file, dirpath, split_size, start_time=0, i=1):
     if file.upper().endswith(VIDEO_SUFFIXES):
         base_name, extension = os.path.splitext(file)
         metadata = extractMetadata(createParser(path))
-        total_duration = metadata.get('duration').seconds - 8
-        split_size = split_size - 3000000
-        while start_time < total_duration:
+        total_duration = metadata.get('duration').seconds - 7
+        split_size = split_size - 2500000
+        parts = math.ceil(size/TG_SPLIT_SIZE)
+        while start_time < total_duration or i < parts:
             parted_name = "{}.part{}{}".format(str(base_name), str(i).zfill(3), str(extension))
             out_path = os.path.join(dirpath, parted_name)
             subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-i", 

@@ -125,9 +125,9 @@ class MirrorListener(listeners.MirrorListeners):
                     path = m_path + ".zip"
                     LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
                     if pswd is not None:
-                        subprocess.run(["7z", "a", f"-p{pswd}", path, m_path])
+                        subprocess.run(["7z", "a", "tzip", "-mx=0", f"-p{pswd}", path, m_path])
                     else:
-                        subprocess.run(["7z", "a", path, m_path])
+                        subprocess.run(["7z", "a", "tzip", "-mx=0", path, m_path])
                 else:
                     path = fs_utils.tar(m_path)
             except FileNotFoundError:
@@ -140,6 +140,8 @@ class MirrorListener(listeners.MirrorListeners):
                 os.remove(m_path)
         elif self.extract:
             try:
+                if os.path.isfile(m_path):
+                    path = fs_utils.get_base_name(m_path)
                 LOGGER.info(f"Extracting: {name}")
                 with download_dict_lock:
                     download_dict[self.uid] = ExtractStatus(name, m_path, size)
@@ -285,8 +287,8 @@ class MirrorListener(listeners.MirrorListeners):
                     fmsg += f"{index}. <a href='{link}'>{item}</a>\n"
                     if len(fmsg) > 3900:
                         sendMessage(msg + fmsg, self.bot, self.update)
-                        fmsg = ""
-                if fmsg != "":
+                        fmsg = ''
+                if fmsg != '':
                     sendMessage(msg + fmsg, self.bot, self.update)
             with download_dict_lock:
                 try:
@@ -414,8 +416,8 @@ def _mirror(
     except IndexError:
         name = ''
     try:
-        ussr = urllib.parse.quote(mesg[1], safe="")
-        pssw = urllib.parse.quote(mesg[2], safe="")
+        ussr = urllib.parse.quote(mesg[1], safe='')
+        pssw = urllib.parse.quote(mesg[2], safe='')
     except:
         ussr = ''
         pssw = ''
@@ -449,7 +451,7 @@ def _mirror(
                     link = reply_text
 
             elif isQbit:
-                file_name = str(time.time()).replace('.', '') + ".torrent"
+                file_name = str(time.time()).replace(".", "") + ".torrent"
                 file.get_file().download(custom_path=f"{file_name}")
                 link = f"{file_name}"
             elif file.mime_type != "application/x-bittorrent":
@@ -470,7 +472,7 @@ def _mirror(
     ):
         resp = requests.get(link)
         if resp.status_code == 200:
-            file_name = str(time.time()).replace('.', '') + ".torrent"
+            file_name = str(time.time()).replace(".", "") + ".torrent"
             open(file_name, "wb").write(resp.content)
             link = f"{file_name}"
         else:

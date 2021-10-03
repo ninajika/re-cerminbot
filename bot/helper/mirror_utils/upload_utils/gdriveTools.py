@@ -899,7 +899,7 @@ class GoogleDriveHelper:
                 self.total_files += 1
                 self.gDrive_file(**file_)
 
-    def clonehelper(self, link):
+    def helper(self, link):
         try:
             file_id = self.getIdFromUrl(link)
         except (KeyError, IndexError):
@@ -919,7 +919,7 @@ class GoogleDriveHelper:
                     self.gDrive_file(**drive_file)
                 except TypeError:
                     pass
-            clonesize = self.total_bytes
+            size = self.total_bytes
             files = self.total_files
         except Exception as err:
             err = str(err).replace('>', '').replace('<', '')
@@ -933,7 +933,7 @@ class GoogleDriveHelper:
             else:
                 msg = f"Error.\n{err}"
             return msg, "", "", ""
-        return "", clonesize, name, files
+        return "", size, name, files
 
     def download(self, link):
         self.is_downloading = True
@@ -949,6 +949,9 @@ class GoogleDriveHelper:
                 self.download_file(file_id, path, meta.get(
                     'name'), meta.get('mimeType'))
         except Exception as err:
+            if isinstance(err, RetryError):
+                LOGGER.info(f"Total Attempts: {err.last_attempt.attempt_number}")
+                err = err.last_attempt.exception()
             err = str(err).replace('>', '').replace('<', '')
             LOGGER.error(err)
             if "downloadQuotaExceeded" in str(err):
@@ -1002,6 +1005,8 @@ class GoogleDriveHelper:
             if self.is_cancelled:
                 break
 
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))
     def download_file(self, file_id, path, filename, mime_type):
         request = self.__service.files().get_media(fileId=file_id)
         filename = filename.replace('/', '')
@@ -1038,6 +1043,8 @@ class GoogleDriveHelper:
                         raise err
         self._file_downloaded_bytes = 0
 
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),
+           retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))
     def _on_download_progress(self):
         if self.dstatus is not None:
             chunk_size = self.dstatus.total_size * \

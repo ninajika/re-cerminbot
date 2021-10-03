@@ -43,7 +43,7 @@ if CONFIG_FILE_URL is not None:
             f.write(res.content)
             f.close()
     else:
-        logging.error(res.status_code)
+        logging.error(f"Failed to download config.env {res.status_code}")
 
 load_dotenv('config.env')
 
@@ -403,7 +403,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download token.pickle {res.status_code}")
             raise KeyError
 except KeyError:
     pass
@@ -418,7 +418,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download accounts.zip {res.status_code}")
             raise KeyError
         subprocess.run(["unzip", "-q", "-o", "accounts.zip"])
         os.remove("accounts.zip")
@@ -435,7 +435,7 @@ try:
                 f.write(res.content)
                 f.close()
         else:
-            logging.error(res.status_code)
+            logging.error(f"Failed to download drive_folder {res.status_code}")
             raise KeyError
 except KeyError:
     pass
