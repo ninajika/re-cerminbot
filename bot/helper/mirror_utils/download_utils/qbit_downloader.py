@@ -106,16 +106,11 @@ class QbitTorrent:
                 )
                 self.client.auth_log_out()
                 return
-            gid = "".join(
-                random.SystemRandom().choices(
-                    string.ascii_letters + string.digits, k=14
-                )
-            )
-            with download_dict_lock:
-                download_dict[listener.uid] = QbDownloadStatus(
-                    gid, listener, self.ext_hash, self.client
-                )
             tor_info = tor_info[0]
+            self.ext_hash = tor_info.hash
+            gid = ''.join(random.SystemRandom().choices(string.ascii_letters + string.digits, k=14))
+            with download_dict_lock:
+                download_dict[listener.uid] = QbDownloadStatus(gid, listener, self.ext_hash, self.client)
             LOGGER.info(f"QbitDownload started: {tor_info.name}")
             self.updater = setInterval(self.update_interval, self.update)
             if BASE_URL is not None and qbitsel:
@@ -201,10 +196,8 @@ class QbitTorrent:
                     self.updater.cancel()
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
-                if (
-                    TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None
-                ) and not self.checked:
-                    if self.listener.isTar or self.listener.extract:
+                if (TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None) and not self.checked:
+                    if (self.listener.isTar or self.listener.extract) and TAR_UNZIP_LIMIT is not None:
                         is_tar_ext = True
                         mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}"
                     else:

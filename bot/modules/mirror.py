@@ -272,14 +272,18 @@ class MirrorListener(listeners.MirrorListeners):
                 uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
             count = len(files)
             if self.message.chat.type == 'private':
-                msg = f'<b>Nama:</b> <code>{link}</code>\n'
-                msg += f'<b>Total File:</b> {count}'
+                msg = f'<b>Namafile: </b><code>{link}</code>\n'
+                msg += f'<b>Total File: </b>{count}'
+                if typ != 0:
+                    msg += f'\n<b>File Rusak: </b>{typ}'
                 sendMessage(msg, self.bot, self.update)
             else:
                 chat_id = str(self.message.chat.id)[4:]
-                msg = f"<b>Nama:</b> <a href='https://t.me/c/{chat_id}/{self.uid}'>{link}</a>\n"
-                msg += f'<b>Total File:</b> {count}\n'
-                msg += f'Dari: {uname}\n\n'
+                msg = f"<b>Namafile: </b><a href='https://t.me/c/{chat_id}/{self.uid}'>{link}</a>\n"
+                msg += f'<b>Total File: </b>{count}\n'
+                if typ != 0:
+                    msg += f'<b>File Rusak: </b>{typ}\n'
+                msg += f'<b>Dari: </b>{uname}\n\n'
                 fmsg = ''
                 for index, item in enumerate(list(files), start=1):
                     msg_id = files[item]
@@ -354,7 +358,7 @@ class MirrorListener(listeners.MirrorListeners):
             else:
                 uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
             if uname is not None:
-                msg += f"\n\nDari: {uname}"
+                msg += f'\n\n<b>Dari: </b>{uname}'
             try:
                 fs_utils.clean_download(download_dict[self.uid].path())
             except FileNotFoundError:

@@ -3,7 +3,7 @@
 # (c) https://github.com/yash-dk/TorToolkit-Telegram for original implemented on TorToolkit-Telegram repo
 # All rights reserved
 
-from bot import DOWNLOAD_DIR, LOGGER, get_client
+from bot import DOWNLOAD_DIR, LOGGER
 from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
     get_readable_file_size,
