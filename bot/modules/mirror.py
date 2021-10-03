@@ -476,7 +476,7 @@ def _mirror(
             open(file_name, "wb").write(resp.content)
             link = f"{file_name}"
         else:
-            sendMessage(f"ERROR: link got HTTP response: {resp.status_code, bot}", update)
+            sendMessage(f"KESALAHAN: tautan mendapat respons HTTP: {resp.status_code}", bot, update)
             return
 
     elif not bot_utils.is_url(link) and not bot_utils.is_magnet(link):

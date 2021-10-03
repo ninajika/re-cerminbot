@@ -928,7 +928,7 @@ class GoogleDriveHelper:
                 token_service = self.alt_authorize()
                 if token_service is not None:
                     self.__service = token_service
-                    return self.clonehelper(link)
+                    return self.helper(link)
                 msg = "Berkas tidak ditemukan."  
             else:
                 msg = f"Error.\n{err}"
