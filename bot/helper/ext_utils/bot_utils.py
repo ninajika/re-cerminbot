@@ -139,7 +139,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
                 MirrorStatus.STATUS_EXTRACTING,
                 MirrorStatus.STATUS_SPLITTING,
             ]:
-                msg += f"\n<code>{get_progress_bar_string(download)} {download.progress()}</code>"
+                msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
                     msg += f"\n<b>Kloning:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
