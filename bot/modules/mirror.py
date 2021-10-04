@@ -520,7 +520,7 @@ def _mirror(
         if TAR_UNZIP_LIMIT is not None:
             result = bot_utils.check_limit(size, TAR_UNZIP_LIMIT)
             if result:
-                msg = f'Gagal, batas Tar/Unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}.'
+                msg = f'Gagal, batas Tar/Unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. '
                 sendMessage(msg, bot, update)
                 return
         LOGGER.info(f"Download Name : {name}")

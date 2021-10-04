@@ -57,6 +57,7 @@ class setInterval:
     def cancel(self):
         self.stopEvent.set()
 
+
 def get_readable_file_size(size_in_bytes) -> str:
     if size_in_bytes is None:
         return '0B'
@@ -68,6 +69,7 @@ def get_readable_file_size(size_in_bytes) -> str:
         return f'{round(size_in_bytes, 2)}{SIZE_UNITS[index]}'
     except IndexError:
         return 'File too large'
+
 
 def getDownloadByGid(gid):
     with download_dict_lock:
@@ -84,6 +86,7 @@ def getDownloadByGid(gid):
             ):
                 return dl
     return None
+
 
 def getAllDownload():
     with download_dict_lock:
@@ -102,6 +105,7 @@ def getAllDownload():
             ):
                 return dlDetails
     return None
+
 
 def get_progress_bar_string(status):
     completed = status.processed_bytes() / 8
@@ -127,7 +131,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             dick_no = len(download_dict)
             global pages
             pages = math.ceil(dick_no / STATUS_LIMIT)
-            if PAGE_NO > pages and pages != 0:
+            if PAGE_NO > pages != 0:
                 globals()['COUNT'] -= STATUS_LIMIT
                 globals()['PAGE_NO'] -= 1
             start = COUNT
@@ -141,7 +145,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             ]:
                 msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
-                    msg += f"\n<b>Kloning:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
+                    msg += f"\n<b>Kloning:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()} "
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
                     msg += f"\n<b>Diunggah:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
                 else:
@@ -172,6 +176,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             return msg, button
         return msg, ""
 
+
 def flip(update, context):
     query = update.callback_query
     query.answer()
@@ -191,6 +196,7 @@ def flip(update, context):
             COUNT -= STATUS_LIMIT
             PAGE_NO -= 1
     message_utils.update_all_messages()
+
 
 def check_limit(size, limit):
     LOGGER.info('Checking File/Folder Size...')
@@ -222,15 +228,19 @@ def get_readable_time(seconds: int) -> str:
     result += f'{seconds}s'
     return result
 
+
 def is_url(url: str):
     url = re.findall(URL_REGEX, url)
     return bool(url)
 
+
 def is_gdrive_link(url: str):
     return "drive.google.com" in url
 
+
 def is_mega_link(url: str):
     return "mega.nz" in url or "mega.co.nz" in url
+
 
 def get_mega_link_type(url: str):
     if "folder" in url:
@@ -241,9 +251,11 @@ def get_mega_link_type(url: str):
         return "folder"
     return "file"
 
+
 def is_magnet(url: str):
     magnet = re.findall(MAGNET_REGEX, url)
     return bool(magnet)
+
 
 def new_thread(fn):
     """To use as decorator to make a function call threaded.

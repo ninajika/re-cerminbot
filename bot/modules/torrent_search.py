@@ -37,7 +37,8 @@ async def return_search(query, page=1, sukebei=False):  # sourcery no-metrics
         if (time.time() - get_time) > 3600:
             results = []
             async with aiohttp.ClientSession() as session:
-                async with session.get(f'https://{"sukebei." if sukebei else ""}nyaa.si/?page=rss&q={urlencode(query)}') as resp:
+                async with session.get(
+                        f'https://{"sukebei." if sukebei else ""}nyaa.si/?page=rss&q={urlencode(query)}') as resp:
                     d = feedparser.parse(await resp.text())
             text = ''
             a = 0
@@ -70,6 +71,7 @@ async def return_search(query, page=1, sukebei=False):  # sourcery no-metrics
             return results[page], len(results), ttl
         except IndexError:
             return '', len(results), ttl
+
 
 message_info = {}
 ignore = set()
@@ -122,7 +124,8 @@ async def nyaa_callback(client, callback_query):
         if message_identifier in ignore:
             await callback_query.answer()
             return
-        user_id, ttl, query, current_page, pages, sukebei = message_info.get(message_identifier, (None, 0, None, 0, 0, None))
+        user_id, ttl, query, current_page, pages, sukebei = message_info.get(message_identifier,
+                                                                             (None, 0, None, 0, 0, None))
         og_current_page = current_page
         if data == 'nyaa_back':
             current_page -= 1
@@ -140,7 +143,9 @@ async def nyaa_callback(client, callback_query):
                 await callback_query.answer('...no', cache_time=3600)
                 return
             text, pages, ttl = await return_search(query, current_page, sukebei)
-        buttons = [InlineKeyboardButton('Prev', 'nyaa_back'), InlineKeyboardButton(f'{current_page}/{pages}', 'nyaa_nop'), InlineKeyboardButton('Next', 'nyaa_next')]
+        buttons = [InlineKeyboardButton('Prev', 'nyaa_back'),
+                   InlineKeyboardButton(f'{current_page}/{pages}', 'nyaa_nop'),
+                   InlineKeyboardButton('Next', 'nyaa_next')]
         if ttl_ended:
             buttons = [InlineKeyboardButton('Search Expired', 'nyaa_nop')]
         else:
@@ -156,6 +161,7 @@ async def nyaa_callback(client, callback_query):
         if ttl_ended:
             ignore.add(message_identifier)
     await callback_query.answer()
+
 
 # Using upstream API based on: https://github.com/Ryuk-me/Torrents-Api
 # Implemented by https://github.com/jusidama18
@@ -200,7 +206,7 @@ class TorrentSearch:
             magnet = values.get('magnet', values.get('Magnet'))  # Avoid updating source dict
             if magnet:
                 extra += f"➲Magnet: `{self.format_magnet(magnet)}`"
-        if (extra):
+        if extra:
             string += "\n" + extra
         return string
 
@@ -210,16 +216,16 @@ class TorrentSearch:
         nextBtn = InlineKeyboardButton("Next", callback_data=f"{self.command}_next")
 
         inline = []
-        if (self.index != 0):
+        if self.index != 0:
             inline.append(prevBtn)
         inline.append(delBtn)
-        if (self.index != len(self.response_range) - 1):
+        if self.index != len(self.response_range) - 1:
             inline.append(nextBtn)
 
-        res_lim = min(self.RESULT_LIMIT, len(self.response) - self.RESULT_LIMIT*self.index)
-        result = f"**Page - {self.index+1}**\n\n"
+        res_lim = min(self.RESULT_LIMIT, len(self.response) - self.RESULT_LIMIT * self.index)
+        result = f"**Page - {self.index + 1}**\n\n"
         result += "\n\n=======================\n\n".join(
-            self.get_formatted_string(self.response[self.response_range[self.index]+i])
+            self.get_formatted_string(self.response[self.response_range[self.index] + i])
             for i in range(res_lim)
         )
 
@@ -239,10 +245,10 @@ class TorrentSearch:
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f"{self.source}/{query}", timeout=15) as resp:
-                    if (resp.status != 200):
+                    if resp.status != 200:
                         raise Exception('unsuccessful request')
                     result = await resp.json()
-                    if (result and isinstance(result[0], list)):
+                    if result and isinstance(result[0], list):
                         result = list(itertools.chain(*result))
                     self.response = result
                     self.response_range = range(0, len(self.response), self.RESULT_LIMIT)
@@ -349,5 +355,7 @@ def searchhelp(update, context):
     sendMessage(help_string, context.bot, update)
 
 
-SEARCHHELP_HANDLER = CommandHandler(BotCommands.TsHelpCommand, searchhelp, filters=(CustomFilters.authorized_chat | CustomFilters.authorized_user) & CustomFilters.mirror_owner_filter, run_async=True)
+SEARCHHELP_HANDLER = CommandHandler(BotCommands.TsHelpCommand, searchhelp, filters=(
+                                                                                               CustomFilters.authorized_chat | CustomFilters.authorized_user) & CustomFilters.mirror_owner_filter,
+                                    run_async=True)
 dispatcher.add_handler(SEARCHHELP_HANDLER)

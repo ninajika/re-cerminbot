@@ -140,8 +140,8 @@ class QbitTorrent:
                         try:
                             tor_info = tor_info[0]
                             if (
-                                tor_info.state == "metaDL"
-                                or tor_info.state == "checkingResumeData"
+                                    tor_info.state == "metaDL"
+                                    or tor_info.state == "checkingResumeData"
                             ):
                                 time.sleep(1)
                             else:
@@ -196,7 +196,7 @@ class QbitTorrent:
             if tor_info.state == "metaDL":
                 self.stalled_time = time.time()
                 if (
-                    time.time() - self.meta_time >= 999999999
+                        time.time() - self.meta_time >= 999999999
                 ):  # timeout while downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
@@ -238,7 +238,7 @@ class QbitTorrent:
                                 return
                     limit = None
                     if TAR_UNZIP_LIMIT is not None and (
-                        self.listener.isTar or self.listener.extract
+                            self.listener.isTar or self.listener.extract
                     ):
                         mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}"
                         limit = TAR_UNZIP_LIMIT
@@ -261,7 +261,7 @@ class QbitTorrent:
                     self.checked = True
             elif tor_info.state == "stalledDL":
                 if (
-                    time.time() - self.stalled_time >= 999999999
+                        time.time() - self.stalled_time >= 999999999
                 ):  # timeout after downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
@@ -282,7 +282,7 @@ class QbitTorrent:
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 if self.qbitsel:
                     for dirpath, subdir, files in os.walk(
-                        f"{self.dire}", topdown=False
+                            f"{self.dire}", topdown=False
                     ):
                         for filee in files:
                             if filee.endswith(".!qB"):
@@ -291,7 +291,7 @@ class QbitTorrent:
                             if folder == ".unwanted":
                                 shutil.rmtree(os.path.join(dirpath, folder))
                     for dirpath, subdir, files in os.walk(
-                        f"{self.dire}", topdown=False
+                            f"{self.dire}", topdown=False
                     ):
                         if not os.listdir(dirpath):
                             os.rmdir(dirpath)
@@ -337,7 +337,7 @@ def get_hash_magnet(mgt):
     if not v.startswith('urn:btih:'):
         LOGGER.error('Invalid magnet URI: "xt" value not valid for BitTorrent.')
         return
-    mgt = v[len('urn:btih:') :]
+    mgt = v[len('urn:btih:'):]
     return mgt.lower()
 
 

@@ -5,8 +5,8 @@
 #
 """ Helper Module containing various sites direct links generators. This module is copied and modified as per need
 from https://github.com/AvinashReddy3108/PaperplaneExtended . I hereby take no credit of the following code other
-than the modifications. See https://github.com/AvinashReddy3108/PaperplaneExtended/commits/master/userbot/modules/direct_links.py
-for original authorship. """
+than the modifications. See https://github.com/AvinashReddy3108/PaperplaneExtended/commits/master/userbot/modules
+/direct_links.py for original authorship. """
 
 import json
 import re
@@ -26,7 +26,7 @@ from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 from bot.helper.telegram_helper.bot_commands import BotCommands
 
 
-def direct_link_generator(link: str):    # sourcery no-metrics
+def direct_link_generator(link: str):  # sourcery no-metrics
     """direct links generator"""
     if not link:
         raise DirectDownloadLinkException("Tidak ditemukan tautan!")
@@ -172,13 +172,14 @@ def sourceforge(url: str) -> str:
     page = BeautifulSoup(requests.get(mirrors).content, "html.parser")
     info = page.find("ul", {"id": "mirrorList"}).findAll("li")
     for mirror in info[1:]:
-        dl_url = (f'https://{mirror["id"]}.dl.sourceforge.net/project/{project}/{file_path}?viasf=1')
+        dl_url = f'https://{mirror["id"]}.dl.sourceforge.net/project/{project}/{file_path}?viasf=1'
     return dl_url
 
 
 def sourceforge2(url: str) -> str:
     """ Sourceforge Master.dl bypass """
     return f"{url}" + "?viasf=1"
+
 
 def anonfiles(url: str) -> str:
     """Anonfiles direct generator
@@ -188,7 +189,6 @@ def anonfiles(url: str) -> str:
     _url = soup.find("a", attrs={"class": "btn-primary"})["href"]
     name = _url.rsplit("/", 1)[1]
     return _url.replace(" ", "%20")
-
 
 
 def uptobox(url: str) -> str:
@@ -267,14 +267,6 @@ def hxfile(url: str) -> str:
              https://github.com/SlamDevs/slam-mirrorbot """
     bypasser = lk21.Bypass()
     return bypasser.bypass_filesIm(url)
-
-
-def anonfiles(url: str) -> str:
-    """ Anonfiles direct link generator
-    Based on https://github.com/zevtyardt/lk21
-             https://github.com/SlamDevs/slam-mirrorbot """
-    bypasser = lk21.Bypass()
-    return bypasser.bypass_anonfiles(url)
 
 
 def letsupload(url: str) -> str:
@@ -436,7 +428,8 @@ def fichier(link: str) -> str:  # sourcery no-metrics
                     f"ERROR: 1fichier berada pada batas. Tunggu sebentar {numbers[0]} menit."
                 )
         elif "protect access" in str(str_2).lower():
-          raise DirectDownloadLinkException(f"ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/{BotCommands.MirrorCommand} https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
+            raise DirectDownloadLinkException(
+                f"ERROR: This link requires a password!\n\n<b>This link requires a password!</b>\n- Insert sign <b>::</b> after the link and write the password after the sign.\n\n<b>Example:</b>\n<code>/{BotCommands.MirrorCommand} https://1fichier.com/?smmtd8twfpm66awbqz04::love you</code>\n\n* No spaces between the signs <b>::</b>\n* For the password, you can use a space!")
         else:
             raise DirectDownloadLinkException(
                 "ERROR: Kesalahan mencoba menghasilkan tautan langsung dari 1fichier!"

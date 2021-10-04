@@ -94,9 +94,9 @@ def start(update, context):
     buttons.buildbutton("Support Group", "https://t.me/rumahmirorr")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     if (
-        CustomFilters.authorized_user(update)
-        or CustomFilters.authorized_chat(update)
-        or update.message.chat.type == "private"
+            CustomFilters.authorized_user(update)
+            or CustomFilters.authorized_chat(update)
+            or update.message.chat.type == "private"
     ):
         start_string = f"""
 Bot ini dapat mencerminkan semua tautan Anda ke Google Drive!
@@ -208,11 +208,11 @@ help_string_telegraph = f'''<br>
 <b>/{BotCommands.StatsCommand}</b>: Tampilkan Statistik Mesin The Bot diselenggarakan
 '''
 help = Telegraph(access_token=telegraph_token).create_page(
-        title='pencarian re-cerminbot',
-        author_name='re-cerminbot',
-        author_url='https://github.com/Ncode2014/re-cerminbot',
-        html_content=help_string_telegraph,
-    )["path"]
+    title='pencarian re-cerminbot',
+    author_name='re-cerminbot',
+    author_url='https://github.com/Ncode2014/re-cerminbot',
+    html_content=help_string_telegraph,
+)["path"]
 
 help_string = f'''
 /{BotCommands.PingCommand}: Periksa berapa lama waktu yang dibutuhkan untuk melakukan Ping Bot
@@ -239,6 +239,7 @@ help_string = f'''
 
 /{BotCommands.TsHelpCommand}: Dapatkan bantuan untuk modul pencarian Torrent
 '''
+
 
 def bot_help(update, context):
     button = button_build.ButtonMaker()

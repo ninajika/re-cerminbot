@@ -212,10 +212,10 @@ class MegaDownloadHelper:
                     return
         limit = None
         if TAR_UNZIP_LIMIT is not None and (listener.isTar or listener.extract):
-            msg3 = f"Gagal, batas tar/unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}."
+            msg3 = f"Gagal, batas tar/unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = TAR_UNZIP_LIMIT
         elif MEGA_LIMIT is not None:
-            msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}."
+            msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = MEGA_LIMIT
         if limit is not None:
             size = api.getSize(node)

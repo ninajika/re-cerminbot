@@ -117,7 +117,7 @@ class GoogleDriveHelper:
     def _on_upload_progress(self):
         if self.status is not None:
             chunk_size = self.status.total_size * \
-                self.status.progress() - self._file_uploaded_bytes
+                         self.status.progress() - self._file_uploaded_bytes
             self._file_uploaded_bytes = self.status.total_size * self.status.progress()  # noqa: E501
             LOGGER.debug(
                 f'Uploading {self.name}, chunk size: {get_readable_file_size(chunk_size)}')  # noqa: E501
@@ -170,7 +170,7 @@ class GoogleDriveHelper:
         self.__service = self.authorize()
 
     @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),  # noqa: E501
-           retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))   # noqa: E501
+           retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))  # noqa: E501
     def __set_permission(self, drive_id):
         permissions = {
             'role': 'reader',
@@ -181,7 +181,7 @@ class GoogleDriveHelper:
         return self.__service.permissions().create(supportsTeamDrives=True, fileId=drive_id,  # noqa: E501
                                                    body=permissions).execute()
 
-    @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),    # noqa: E501
+    @retry(wait=wait_exponential(multiplier=2, min=3, max=6), stop=stop_after_attempt(5),  # noqa: E501
            retry=retry_if_exception_type(HttpError), before=before_log(LOGGER, logging.DEBUG))  # noqa: E501
     def upload_file(self, file_path, file_name, mime_type, parent_id):
         # File body description
@@ -559,10 +559,10 @@ class GoogleDriveHelper:
                     credentials = pickle.load(f)
             if credentials is None or not credentials.valid:
                 if (
-                    credentials
-                    and credentials.expired
-                    and credentials.refresh_token
-                 ):
+                        credentials
+                        and credentials.expired
+                        and credentials.refresh_token
+                ):
                     credentials.refresh(Request())
                 else:
                     flow = InstalledAppFlow.from_client_secrets_file(
@@ -603,7 +603,6 @@ class GoogleDriveHelper:
                 return build('drive', 'v3', credentials=credentials, cache_discovery=False)
         return None
 
-
     def edit_telegraph(self):
         nxt_page = 1
         prev_page = 0
@@ -621,7 +620,8 @@ class GoogleDriveHelper:
             Telegraph(access_token=telegraph_token).edit_page(path=self.path[prev_page],  # noqa: E501
                                                               title='re-mirrorbot pencarian',  # noqa: E501
                                                               author_name='re-mirrorbot',  # noqa: E501
-                                                              author_url='https://github.com/Ncode2014/re-cerminbot',  # noqa: E501
+                                                              author_url='https://github.com/Ncode2014/re-cerminbot',
+                                                              # noqa: E501
                                                               html_content=content)  # noqa: E501
         return
 
@@ -632,21 +632,21 @@ class GoogleDriveHelper:
             str = str.replace(char, ' ')
         return str
 
-    def get_recursive_list(self, file, rootid = "root"):
+    def get_recursive_list(self, file, rootid="root"):
         rtnlist = []
         if not rootid:
             rootid = file.get('teamDriveId')
         if rootid == "root":
-            rootid = self.__service.files().get(fileId = 'root', fields="id").execute().get('id')
+            rootid = self.__service.files().get(fileId='root', fields="id").execute().get('id')
         x = file.get("name")
         y = file.get("id")
-        while(y != rootid):
+        while (y != rootid):
             rtnlist.append(x)
             file = self.__service.files().get(
-                                            fileId=file.get("parents")[0],
-                                            supportsAllDrives=True,
-                                            fields='id, name, parents'
-                                            ).execute()
+                fileId=file.get("parents")[0],
+                supportsAllDrives=True,
+                fields='id, name, parents'
+            ).execute()
             x = file.get("name")
             y = file.get("id")
         rtnlist.reverse()
@@ -669,28 +669,28 @@ class GoogleDriveHelper:
                 if parent_id == "root":
                     return (
                         self.__service.files()
-                        .list(q=query + " and 'me' in owners",
-                            pageSize=100,
-                            spaces='drive',
-                            fields='files(id, name, mimeType, size, parents)',
-                            orderBy='folder, name asc'
-                        )
-                        .execute()
+                            .list(q=query + " and 'me' in owners",
+                                  pageSize=100,
+                                  spaces='drive',
+                                  fields='files(id, name, mimeType, size, parents)',
+                                  orderBy='folder, name asc'
+                                  )
+                            .execute()
                     )
                 else:
                     return (
                         self.__service.files()
-                        .list(supportsTeamDrives=True,
-                            includeTeamDriveItems=True,
-                            teamDriveId=parent_id,
-                            q=query,
-                            corpora='drive',
-                            spaces='drive',
-                            pageSize=100,
-                            fields='files(id, name, mimeType, size, teamDriveId, parents)',
-                            orderBy='folder, name asc'
-                        )
-                        .execute()
+                            .list(supportsTeamDrives=True,
+                                  includeTeamDriveItems=True,
+                                  teamDriveId=parent_id,
+                                  q=query,
+                                  corpora='drive',
+                                  spaces='drive',
+                                  pageSize=100,
+                                  fields='files(id, name, mimeType, size, teamDriveId, parents)',
+                                  orderBy='folder, name asc'
+                                  )
+                            .execute()
                     )
             else:
                 if self.stopDup:
@@ -704,7 +704,7 @@ class GoogleDriveHelper:
                 query += "trashed = false"
                 return (
                     self.__service.files()
-                    .list(
+                        .list(
                         supportsTeamDrives=True,
                         includeTeamDriveItems=True,
                         q=query,
@@ -713,7 +713,7 @@ class GoogleDriveHelper:
                         fields='files(id, name, mimeType, size)',
                         orderBy='folder, name asc',
                     )
-                    .execute()
+                        .execute()
                 )
         except Exception as err:
             err = str(err).replace('>', '').replace('<', '')
@@ -756,7 +756,8 @@ class GoogleDriveHelper:
                         msg += f"<b><a href={furl}>Link Drive</a></b>"
                     if INDEX_URLS[index] is not None:
                         if RECURSIVE_SEARCH:
-                            url_path = "/".join([requests.utils.quote(n, safe='') for n in self.get_recursive_list(file, parent_id)])
+                            url_path = "/".join(
+                                [requests.utils.quote(n, safe='') for n in self.get_recursive_list(file, parent_id)])
                         else:
                             url_path = requests.utils.quote(f'{file.get("name")}')
                         url = f'{INDEX_URLS[index]}/{url_path}/'
@@ -766,8 +767,8 @@ class GoogleDriveHelper:
                         else:
                             msg += f' <b>| <a href="{url}">Link Index</a></b>'
                 elif file.get('mimeType') == 'application/vnd.google-apps.shortcut':  # noqa: E501
-                    msg += f"⁍<a href='https://drive.google.com/drive/folders/{file.get('id')}'>{file.get('name')}"  \
-                        f"</a> (shortcut)"
+                    msg += f"⁍<a href='https://drive.google.com/drive/folders/{file.get('id')}'>{file.get('name')}" \
+                           f"</a> (shortcut)"
                     # Excluded index link as indexes cant download or open these shortcuts  # noqa: E501
                 else:
                     furl = f"https://drive.google.com/uc?id={file.get('id')}&export=download"  # noqa: E501
@@ -929,7 +930,7 @@ class GoogleDriveHelper:
                 if token_service is not None:
                     self.__service = token_service
                     return self.helper(link)
-                msg = "Berkas tidak ditemukan."  
+                msg = "Berkas tidak ditemukan."
             else:
                 msg = f"Error.\n{err}"
             return msg, "", "", ""
@@ -1048,7 +1049,7 @@ class GoogleDriveHelper:
     def _on_download_progress(self):
         if self.dstatus is not None:
             chunk_size = self.dstatus.total_size * \
-                self.dstatus.progress() - self._file_downloaded_bytes
+                         self.dstatus.progress() - self._file_downloaded_bytes
             self._file_downloaded_bytes = self.dstatus.total_size * self.dstatus.progress()  # noqa: E501
             self.downloaded_bytes += chunk_size
             self.dtotal_time += self.update_interval

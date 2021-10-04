@@ -21,9 +21,9 @@ def leechSet(update, context):
     path = f"Thumbnails/{user_id}.jpg"
     msg = f"Leech Type for {user_id} user is "
     if (
-        user_id in AS_DOC_USERS
-        or user_id not in AS_MEDIA_USERS
-        and AS_DOCUMENT
+            user_id in AS_DOC_USERS
+            or user_id not in AS_MEDIA_USERS
+            and AS_DOCUMENT
     ):
         msg += "DOCUMENT"
     else:
@@ -40,6 +40,7 @@ def leechSet(update, context):
     choose_msg = sendMarkup(msg, context.bot, update, button)
     threading.Thread(target=auto_delete_message, args=(context.bot, update.message, choose_msg)).start()
 
+
 def setLeechType(update, context):
     query = update.callback_query
     user_id = query.from_user.id
@@ -49,9 +50,9 @@ def setLeechType(update, context):
         query.answer(text="Not Yours!", show_alert=True)
     elif data[0] == "doc":
         if (
-            user_id in AS_DOC_USERS
-            or user_id not in AS_MEDIA_USERS
-            and AS_DOCUMENT
+                user_id in AS_DOC_USERS
+                or user_id not in AS_MEDIA_USERS
+                and AS_DOCUMENT
         ):
             query.answer(text="Already As Document!", show_alert=True)
         elif user_id in AS_MEDIA_USERS:
@@ -81,6 +82,7 @@ def setLeechType(update, context):
     elif data[0] == "closeset":
         query.message.delete()
 
+
 def setThumb(update, context):
     user_id = update.message.from_user.id
     reply_to = update.message.reply_to_message
@@ -101,8 +103,13 @@ def setThumb(update, context):
     else:
         sendMessage("Reply to a photo to save custom thumbnail.", context.bot, update)
 
-leech_set_handler = CommandHandler(BotCommands.LeechSetCommand, leechSet, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
-set_thumbnail_handler = CommandHandler(BotCommands.SetThumbCommand, setThumb, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user, run_async=True)
+
+leech_set_handler = CommandHandler(BotCommands.LeechSetCommand, leechSet,
+                                   filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
+                                   run_async=True)
+set_thumbnail_handler = CommandHandler(BotCommands.SetThumbCommand, setThumb,
+                                       filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
+                                       run_async=True)
 as_doc_handler = CallbackQueryHandler(setLeechType, pattern="doc", run_async=True)
 as_media_handler = CallbackQueryHandler(setLeechType, pattern="med", run_async=True)
 del_thumb_handler = CallbackQueryHandler(setLeechType, pattern="thumb", run_async=True)

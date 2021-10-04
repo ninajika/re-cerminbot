@@ -49,13 +49,14 @@ load_dotenv('config.env')
 
 SERVER_PORT = os.environ.get('SERVER_PORT', None)
 PORT = os.environ.get('PORT', SERVER_PORT)
-web = subprocess.Popen([f"gunicorn wserver:start_server --bind 0.0.0.0:{PORT} --worker-class aiohttp.GunicornWebWorker"], shell=True)
+web = subprocess.Popen(
+    [f"gunicorn wserver:start_server --bind 0.0.0.0:{PORT} --worker-class aiohttp.GunicornWebWorker"], shell=True)
 time.sleep(1)
 alive = subprocess.Popen(["python3", "alive.py"])
 
 subprocess.run(["mkdir", "-p", "qBittorrent/config"])
 subprocess.run(["cp", "qBittorrent.conf",
-               "qBittorrent/config/qBittorrent.conf"])
+                "qBittorrent/config/qBittorrent.conf"])
 subprocess.run(["qbittorrent-nox", "-d", "--profile=."])
 Interval = []
 DRIVES_NAMES = []
@@ -190,7 +191,6 @@ if DB_URI is not None:
     finally:
         cur.close()
         conn.close()
-
 
 LOGGER.info("Generating USER_SESSION_STRING")
 app = Client(
