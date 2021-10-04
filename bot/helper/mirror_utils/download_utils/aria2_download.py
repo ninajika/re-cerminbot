@@ -1,26 +1,37 @@
-from bot import aria2, download_dict_lock, STOP_DUPLICATE, TORRENT_DIRECT_LIMIT, TAR_UNZIP_LIMIT
-from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
+import threading
+from time import sleep
+
+from aria2p import API
+
+from bot import (
+    STOP_DUPLICATE,
+    TAR_UNZIP_LIMIT,
+    TORRENT_DIRECT_LIMIT,
+    aria2,
+    download_dict_lock,
+)
 from bot.helper.ext_utils.bot_utils import *
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
+from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import *
-import threading
-from aria2p import API
-from time import sleep
 
 
 class AriaDownloadHelper:
-
     def __init__(self):
         super().__init__()
 
     @new_thread
     def __onDownloadStarted(self, api, gid):
-        if STOP_DUPLICATE or TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None:
+        if (
+            STOP_DUPLICATE
+            or TORRENT_DIRECT_LIMIT is not None
+            or TAR_UNZIP_LIMIT is not None
+        ):
             sleep(1)
             dl = getDownloadByGid(gid)
             download = aria2.get_download(gid)
             if STOP_DUPLICATE and dl is not None and not dl.getListener().isLeech:
-                LOGGER.info('Checking File/Folder if already in Drive...')
+                LOGGER.info("Checking File/Folder if already in Drive...")
                 sname = aria2.get_download(gid).name
                 if dl.getListener().isTar:
                     sname = sname + ".zip" if dl.getListener().isZip else sname + ".tar"
@@ -28,24 +39,35 @@ class AriaDownloadHelper:
                     gdrive = GoogleDriveHelper()
                     smsg, button = gdrive.drive_list(sname, True)
                     if smsg:
-                         dl.getListener().onDownloadError('File/Folder sudah tersedia di Drive.\n\n')
-                         aria2.remove([download], force=True)
-                         sendMarkup("Berikut adalah hasil pencariannya:", dl.getListener().bot, dl.getListener().update, button)
-                         return
+                        dl.getListener().onDownloadError(
+                            "File/Folder sudah tersedia di Drive.\n\n"
+                        )
+                        aria2.remove([download], force=True)
+                        sendMarkup(
+                            "Berikut adalah hasil pencariannya:",
+                            dl.getListener().bot,
+                            dl.getListener().update,
+                            button,
+                        )
+                        return
             if dl is not None:
                 limit = None
-                if TAR_UNZIP_LIMIT is not None and (dl.getListener().isTar or dl.getListener().extract):
-                    mssg = f'Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}'
+                if TAR_UNZIP_LIMIT is not None and (
+                    dl.getListener().isTar or dl.getListener().extract
+                ):
+                    mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}"
                     limit = TAR_UNZIP_LIMIT
                 elif TORRENT_DIRECT_LIMIT is not None:
-                    mssg = f'Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}'
+                    mssg = f"Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}"
                     limit = TORRENT_DIRECT_LIMIT
                 if limit is not None:
                     sleep(1)
                     size = aria2.get_download(gid).total_length
                     result = check_limit(size, limit)
                     if result:
-                        dl.getListener().onDownloadError(f'{mssg}.\nYour File/Folder size is {get_readable_file_size(size)}')
+                        dl.getListener().onDownloadError(
+                            f"{mssg}.\nYour File/Folder size is {get_readable_file_size(size)}"
+                        )
                         aria2.remove([download], force=True)
                         return
         update_all_messages()
@@ -63,7 +85,7 @@ class AriaDownloadHelper:
                 if new_download.is_torrent:
                     download_dict[dl.uid()].is_torrent = True
             update_all_messages()
-            LOGGER.info(f'Changed gid from {gid} to {new_gid}')
+            LOGGER.info(f"Changed gid from {gid} to {new_gid}")
         elif dl:
             threading.Thread(target=dl.getListener().onDownloadComplete).start()
 
@@ -71,25 +93,30 @@ class AriaDownloadHelper:
     def __onDownloadStopped(self, api, gid):
         sleep(4)
         dl = getDownloadByGid(gid)
-        if dl: 
-            dl.getListener().onDownloadError('Torrent mati!')
+        if dl:
+            dl.getListener().onDownloadError("Torrent mati!")
 
     @new_thread
     def __onDownloadError(self, api, gid):
         LOGGER.info(f"onDownloadError: {gid}")
-        sleep(0.5)  # sleep for split second to ensure proper dl gid update from onDownloadComplete
+        sleep(
+            0.5
+        )  # sleep for split second to ensure proper dl gid update from onDownloadComplete
         dl = getDownloadByGid(gid)
         download = aria2.get_download(gid)
         error = download.error_message
         LOGGER.info(f"Download Error: {error}")
-        if dl: 
+        if dl:
             dl.getListener().onDownloadError(error)
 
     def start_listener(self):
-        aria2.listen_to_notifications(threaded=True, on_download_start=self.__onDownloadStarted,
-                                      on_download_error=self.__onDownloadError,
-                                      on_download_stop=self.__onDownloadStopped,
-                                      on_download_complete=self.__onDownloadComplete)
+        aria2.listen_to_notifications(
+            threaded=True,
+            on_download_start=self.__onDownloadStarted,
+            on_download_error=self.__onDownloadError,
+            on_download_stop=self.__onDownloadStopped,
+            on_download_complete=self.__onDownloadComplete,
+        )
 
     def add_download(self, link: str, path, listener, filename):
         if is_magnet(link):
