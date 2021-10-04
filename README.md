@@ -31,7 +31,7 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - Leech supported
 - Thumbnail supported
 - Size limiting for Torrent/Direct, Tar/Unzip, Mega and clone
-- Stop duplicates for all tasks except for qBittorrent and youtube-dl tasks 
+- Stop duplicates for all tasks except for youtube-dl tasks 
 - Tar/Unzip G-Drive link 
 - Select files from Torrent before downloading using qbittorrent
 - Sudo with Database or without Database
@@ -308,7 +308,7 @@ you can add sudo before docker run if you not access root access
 
 ## Deploying on Heroku
 - Deploying on Heroku with Github Workflow
-<p><a href="https://github.com/SlamDevs/slam-mirrorbot/wiki/Deploying-slam-mirrorbot-on-Heroku-with-Github-Workflows"> <img src="https://img.shields.io/badge/Deploy%20Guide-blueviolet?style=for-the-badge&logo=heroku" width="170""/></a></p>
+<p><a href="https://telegra.ph/Heroku-Deployment-10-04"> <img src="https://img.shields.io/badge/Deploy%20Guide-blueviolet?style=for-the-badge&logo=heroku" width="170""/></a></p>
 
 # Using Service Accounts for uploading to avoid user rate limit
 For Service Account to work, you must set `USE_SERVICE_ACCOUNTS` = "True" in config file or environment variables.

@@ -2,48 +2,34 @@
 # (c) https://github.com/SlamDevs/slam-mirrorbot
 # All rights reserved
 
-import logging
 import os
 import random
-import shutil
 import string
 import time
-from fnmatch import fnmatch
-from urllib.parse import parse_qs, urlparse
+import logging
+import shutil
 
 import qbittorrentapi as qba
+from urllib.parse import urlparse, parse_qs
+from torrentool.api import Torrent
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
-from torrentool.api import Torrent
 
-from bot import (
-    BASE_URL,
-    TAR_UNZIP_LIMIT,
-    TORRENT_DIRECT_LIMIT,
-    dispatcher,
-    download_dict,
-    download_dict_lock,
-    get_client,
-)
-from bot.helper.ext_utils.bot_utils import (
-    MirrorStatus,
-    check_limit,
-    get_readable_file_size,
-    getDownloadByGid,
-    new_thread,
-    setInterval,
-)
+from bot import download_dict, download_dict_lock, BASE_URL, dispatcher, get_client, TORRENT_DIRECT_LIMIT, TAR_UNZIP_LIMIT, STOP_DUPLICATE
 from bot.helper.mirror_utils.status_utils.qbit_download_status import QbDownloadStatus
-from bot.helper.telegram_helper import button_build
+from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import *
+from bot.helper.ext_utils.bot_utils import setInterval, new_thread, MirrorStatus, getDownloadByGid, get_readable_file_size, check_limit
+from bot.helper.telegram_helper import button_build
 
 LOGGER = logging.getLogger(__name__)
-logging.getLogger("qbittorrentapi").setLevel(logging.ERROR)
-logging.getLogger("requests").setLevel(logging.ERROR)
-logging.getLogger("urllib3").setLevel(logging.ERROR)
-
+logging.getLogger('qbittorrentapi').setLevel(logging.ERROR)
+logging.getLogger('requests').setLevel(logging.ERROR)
+logging.getLogger('urllib3').setLevel(logging.ERROR)
 
 class QbitTorrent:
+
+
     def __init__(self):
         self.update_interval = 2
         self.meta_time = time.time()
@@ -75,35 +61,22 @@ class QbitTorrent:
                 os.remove(link)
             else:
                 op = self.client.torrents_add(link, save_path=dire)
+            time.sleep(0.3)
             if op.lower() == "ok.":
                 tor_info = self.client.torrents_info(torrent_hashes=self.ext_hash)
                 if len(tor_info) == 0:
                     while True:
                         if time.time() - self.meta_time >= 20:
-                            sendMessage(
-                                "Torrent tidak ditambahkan. Laporkan saat Anda melihat kesalahan ini",
-                                listener.bot,
-                                listener.update,
-                            )
-                            self.client.torrents_delete(
-                                torrent_hashes=self.ext_hash, delete_files=True
-                            )
+                            sendMessage("Torrent tidak ditambahkan. Laporkan saat Anda melihat kesalahan ini", listener.bot, listener.update)
+                            self.client.torrents_delete(torrent_hashes=self.ext_hash, delete_files=True)
                             self.client.auth_log_out()
                             return False
-                        tor_info = self.client.torrents_info(
-                            torrent_hashes=self.ext_hash
-                        )
+                        tor_info = self.client.torrents_info(torrent_hashes=self.ext_hash)
                         if len(tor_info) > 0:
                             break
             else:
-                sendMessage(
-                    "Ini adalah tautan yang tidak didukung/tidak valid.",
-                    listener.bot,
-                    listener.update,
-                )
-                self.client.torrents_delete(
-                    torrent_hashes=self.ext_hash, delete_files=True
-                )
+                sendMessage("Ini adalah tautan yang tidak didukung/tidak valid.", listener.bot, listener.update)
+                self.client.torrents_delete(torrent_hashes=self.ext_hash, delete_files=True)
                 self.client.auth_log_out()
                 return
             tor_info = tor_info[0]
@@ -115,31 +88,22 @@ class QbitTorrent:
             self.updater = setInterval(self.update_interval, self.update)
             if BASE_URL is not None and qbitsel:
                 if not is_file:
-                    meta = sendMessage(
-                        "Mengunduh Metadata... Harap tunggu lalu Anda dapat memilih file atau mencerminkan file Torrent jika memiliki seeder rendah",
-                        listener.bot,
-                        listener.update,
-                    )
+                    meta = sendMessage("Mengunduh Metadata... Harap tunggu lalu Anda dapat memilih file atau mencerminkan file Torrent jika memiliki seeder rendah", listener.bot, listener.update)
                     while True:
-                        tor_info = self.client.torrents_info(
-                            torrent_hashes=self.ext_hash
-                        )
-                        if len(tor_info) == 0:
-                            deleteMessage(listener.bot, meta)
-                            return False
-                        try:
-                            tor_info = tor_info[0]
-                            if (
-                                tor_info.state == "metaDL"
-                                or tor_info.state == "checkingResumeData"
-                            ):
-                                time.sleep(1)
-                            else:
+                            tor_info = self.client.torrents_info(torrent_hashes=self.ext_hash)
+                            if len(tor_info) == 0:
                                 deleteMessage(listener.bot, meta)
-                                break
-                        except:
-                            deleteMessage(listener.bot, meta)
-                            return False
+                                return False
+                            try:
+                                tor_info = tor_info[0]
+                                if tor_info.state == "metaDL" or tor_info.state == "checkingResumeData":
+                                    time.sleep(1)
+                                else:
+                                    deleteMessage(listener.bot, meta)
+                                    break
+                            except:
+                                deleteMessage(listener.bot, meta)
+                                return False
                 time.sleep(0.5)
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 for n in str(self.ext_hash):
@@ -153,8 +117,8 @@ class QbitTorrent:
                 donedata = f"done {gid} {self.ext_hash}"
                 buttons = button_build.ButtonMaker()
                 buttons.buildbutton("Pilih File", URL)
-                buttons.sbutton("Pincode", pindata)
-                buttons.sbutton("Selesai Memilih", donedata)
+                buttons.sbutton("Kode Pin", pindata)
+                buttons.sbutton("Selesai memilih", donedata)
                 QBBUTTONS = InlineKeyboardMarkup(buttons.build_menu(2))
                 msg = "Unduhan Anda dijeda. Pilih file lalu tekan tombol Selesai Memilih untuk mulai mengunduh."
                 sendMarkup(msg, listener.bot, listener.update, QBBUTTONS)
@@ -162,11 +126,7 @@ class QbitTorrent:
                 sendStatusMessage(listener.update, listener.bot)
         except qba.UnsupportedMediaType415Error as e:
             LOGGER.error(str(e))
-            sendMessage(
-                "Ini adalah tautan yang tidak didukung/tidak valid: {str(e)}",
-                listener.bot,
-                listener.update,
-            )
+            sendMessage("Ini adalah tautan yang tidak didukung/tidak valid: {str(e)}", listener.bot, listener.update)
             self.client.torrents_delete(torrent_hashes=self.ext_hash, delete_files=True)
             self.client.auth_log_out()
         except Exception as e:
@@ -175,7 +135,8 @@ class QbitTorrent:
             self.client.torrents_delete(torrent_hashes=self.ext_hash, delete_files=True)
             self.client.auth_log_out()
 
-    def update(self):  # sourcery no-metrics
+
+    def update(self):
         tor_info = self.client.torrents_info(torrent_hashes=self.ext_hash)
         if len(tor_info) == 0:
             self.client.auth_log_out()
@@ -185,72 +146,78 @@ class QbitTorrent:
             tor_info = tor_info[0]
             if tor_info.state == "metaDL":
                 self.stalled_time = time.time()
-                if (
-                    time.time() - self.meta_time >= 999999999
-                ):  # timeout while downloading metadata
+                if time.time() - self.meta_time >= 999999999: # timeout while downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
-                    self.listener.onDownloadError("Torrent Mati!")
+                    self.listener.onDownloadError("Dead Torrent!")
                     self.client.torrents_delete(torrent_hashes=self.ext_hash)
                     self.client.auth_log_out()
                     self.updater.cancel()
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
-                if (TORRENT_DIRECT_LIMIT is not None or TAR_UNZIP_LIMIT is not None) and not self.checked:
-                    if (self.listener.isTar or self.listener.extract) and TAR_UNZIP_LIMIT is not None:
-                        is_tar_ext = True
-                        mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}"
-                    else:
-                        is_tar_ext = False
-                        mssg = f"Batas Torrent/Langsung adalah {TORRENT_DIRECT_LIMIT}"
-                    size = tor_info.size
-                    result = check_limit(
-                        size, TORRENT_DIRECT_LIMIT, TAR_UNZIP_LIMIT, is_tar_ext
-                    )
+                if not self.checked:
+                    if STOP_DUPLICATE and not self.listener.isLeech:
+                        LOGGER.info('Checking File/Folder if already in Drive')
+                        qbname = os.listdir(f'{self.dire}')[0]
+                        if self.listener.isTar:
+                            qbname = qbname + ".zip" if self.listener.isZip else qbname + ".tar"
+                        if not self.listener.extract:
+                            gd = GoogleDriveHelper()
+                            qbmsg, button = gd.drive_list(qbname, True)
+                            if qbmsg:
+                                msg = "File/Folder sudah tersedia di Drive."
+                                self.client.torrents_pause(torrent_hashes=self.ext_hash)
+                                time.sleep(0.3)
+                                self.listener.onDownloadError(msg)
+                                sendMarkup("Berikut adalah hasil pencariannya:", self.listener.bot, self.listener.update, button)
+                                self.client.torrents_delete(torrent_hashes=self.ext_hash)
+                                self.client.auth_log_out()
+                                self.updater.cancel()  
+                                return
+                    limit = None
+                    if TAR_UNZIP_LIMIT is not None and (self.listener.isTar or self.listener.extract):
+                        mssg = f'Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}'
+                        limit = TAR_UNZIP_LIMIT
+                    elif TORRENT_DIRECT_LIMIT is not None:
+                        mssg = f'Batas Torrent/Langsung adalah {TORRENT_DIRECT_LIMIT}'
+                        limit = TORRENT_DIRECT_LIMIT
+                    if limit is not None:
+                        size = tor_info.size
+                        result = check_limit(size, limit)
+                        if result:
+                            self.client.torrents_pause(torrent_hashes=self.ext_hash)
+                            time.sleep(0.3)
+                            self.listener.onDownloadError(f"{mssg}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}")
+                            self.client.torrents_delete(torrent_hashes=self.ext_hash)
+                            self.client.auth_log_out()
+                            self.updater.cancel()     
                     self.checked = True
-                    if result:
-                        self.client.torrents_pause(torrent_hashes=self.ext_hash)
-                        time.sleep(0.3)
-                        self.listener.onDownloadError(
-                            f"{mssg}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}"
-                        )
-                        self.client.torrents_delete(torrent_hashes=self.ext_hash)
-                        self.client.auth_log_out()
-                        self.updater.cancel()
             elif tor_info.state == "stalledDL":
-                if (
-                    time.time() - self.stalled_time >= 999999999
-                ):  # timeout after downloading metadata
+                if time.time() - self.stalled_time >= 999999999: # timeout after downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
-                    self.listener.onDownloadError("Torrent Mati!")
+                    self.listener.onDownloadError("Dead Torrent!")
                     self.client.torrents_delete(torrent_hashes=self.ext_hash)
                     self.client.auth_log_out()
                     self.updater.cancel()
             elif tor_info.state == "error":
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 time.sleep(0.3)
-                self.listener.onDownloadError(
-                    "Tidak ada cukup ruang untuk torrent ini di perangkat"
-                )
+                self.listener.onDownloadError("Tidak ada cukup ruang untuk torrent ini di perangkat")
                 self.client.torrents_delete(torrent_hashes=self.ext_hash)
                 self.client.auth_log_out()
                 self.updater.cancel()
             elif tor_info.state == "uploading" or tor_info.state.lower().endswith("up"):
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 if self.qbitsel:
-                    for dirpath, subdir, files in os.walk(
-                        f"{self.dire}", topdown=False
-                    ):
-                        for file in files:
-                            if fnmatch(file, "*.!qB"):
-                                os.remove(os.path.join(dirpath, file))
+                    for dirpath, subdir, files in os.walk(f"{self.dire}", topdown=False):
+                        for filee in files:
+                            if filee.endswith(".!qB"):
+                                os.remove(os.path.join(dirpath, filee))
                         for folder in subdir:
-                            if fnmatch(folder, ".unwanted"):
+                            if folder == ".unwanted":
                                 shutil.rmtree(os.path.join(dirpath, folder))
-                    for dirpath, subdir, files in os.walk(
-                        f"{self.dire}", topdown=False
-                    ):
+                    for dirpath, subdir, files in os.walk(f"{self.dire}", topdown=False):
                         if not os.listdir(dirpath):
                             os.rmdir(dirpath)
                 self.listener.onDownloadComplete()
@@ -284,18 +251,18 @@ def get_confirm(update, context):
 
 
 def get_hash_magnet(mgt):
-    if mgt.startswith("magnet:"):
+    if mgt.startswith('magnet:'):
         _, _, _, _, query, _ = urlparse(mgt)
     qs = parse_qs(query)
-    v = qs.get("xt", None)
+    v = qs.get('xt', None)
     if v is None or v == []:
         LOGGER.error('Invalid magnet URI: no "xt" query parameter.')
         return
     v = v[0]
-    if not v.startswith("urn:btih:"):
+    if not v.startswith('urn:btih:'):
         LOGGER.error('Invalid magnet URI: "xt" value not valid for BitTorrent.')
         return
-    mgt = v[len("urn:btih:") :]
+    mgt = v[len('urn:btih:'):]
     return mgt.lower()
 
 
