@@ -9,24 +9,23 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 ![GitHub watchers](https://img.shields.io/github/watchers/Ncode2014/re-mirrorbot)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Ncode2014/re-mirrorbot?color=red)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Ncode2014/re-mirrorbot)
-![GitHub](https://img.shields.io/github/license/SlamDevs/slam-mirrorbot)
+![GitHub](https://img.shields.io/github/license/Ncode2014/re-cerminbot)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/narima/megaria?label=Docker%20Pull)
 
-**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
+**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and new base from [mirror-leach-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
 
 
-## what some different feature rather the original [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
+## what some different feature rather the original [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot)
 - adding more direct link generator
 - still using some old stuff like image url on speedtest,index link, mediainfo,usage and etc
 - you can change yt-dlp or ytdl because the docker has been included to dependency
 - still support and keep using latest updated slam-mirrorbot
-- Using Qbittorrent Enhanced Edition
 - Custom Progress bar
 - Supported arm64
 - dropped using button template (cli still supported or using whatever method)
 
-## Additional Features On [slam-mirrorbot](https://github.com/SlamDevs/slam-mirrorbot)
+## Additional Features On [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot)
 - qBittorrent
 - Leech supported
 - Thumbnail supported
@@ -162,6 +161,7 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `DOWNLOAD_DIR`: The path to the local folder where the downloads should be downloaded to
 - `DOWNLOAD_STATUS_UPDATE_INTERVAL`: A short interval of time in seconds after which the Mirror progress/status message is updated. (I recommend to keep it to `5` seconds at least)  
 - `AUTO_DELETE_MESSAGE_DURATION`: Interval of time (in seconds), after which the bot deletes it's message (and command message) which is expected to be viewed instantly. (**NOTE**: Set to `-1` to never automatically delete messages)
+- `BASE_URL_OF_BOT`: (Required for Heroku to avoid sleep/idling) Valid BASE URL of app where the bot is deployed. Format of URL should be `http://myip` (where `myip` is the IP/Domain of your bot) or if you have chosen other port than `80` then fill in this format `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: Do not put slash at the end), still got idling? You can use http://cron-job.org to ping your Heroku app.
 ### Optional Field
 - `ACCOUNTS_ZIP_URL`: Only if you want to load your Service Account externally from an Index Link. Archive the accounts folder to a zip file. Fill this with the direct link of that file.
 - `TOKEN_PICKLE_URL`: Only if you want to load your **token.pickle** externally from an Index Link. Fill this with the direct link of that file.
@@ -191,7 +191,6 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `STATUS_LIMIT`: Limit the no. of tasks shown in status message with button. (**NOTE**: Recommended limit is `4` tasks at max).
 - `IS_VPS`: (Only for VPS) Don't set this to `True` even if you are using VPS, unless facing error with web server.
 - `SERVER_PORT`: Only For VPS even if `IS_VPS` is `False` --> Base URL Port
-- `BASE_URL_OF_BOT`: (Required for Heroku to avoid sleep/idling) Valid BASE URL of app where the bot is deployed. Format of URL should be `http://myip` (where `myip` is the IP/Domain of your bot) or if you have chosen other port than `80` then fill in this format `http://myip:port`, for Heroku fill `https://yourappname.herokuapp.com` (**NOTE**: Do not put slash at the end), still got idling? You can use http://cron-job.org to ping your Heroku app.
 - `IMAGE_URL`: Show Image/Logo in /start message, Use telegra.ph or any direct link image
 - `RECURSIVE_SEARCH`: Set this to `True` to search in sub-folders with `/list` (**NOTE**: This will only work with Shared-Drive ID or fill `root` for main Drive. Folder IDs are not compatible with it.)
 - `TG_SPLIT_SIZE`: Size Telegram split, leave it empty for max size `2GB`
@@ -217,7 +216,7 @@ Three buttons are already added including Drive Link, Index Link, and View Link,
 
 ## Bot commands to be set in [@BotFather](https://t.me/BotFather)
 
-<p><a href="https://github.com/SlamDevs/slam-mirrorbot/wiki/Bot-commands-to-be-set-in-BotFather"> <img src="https://img.shields.io/badge/See%20On%20Wiki-grey?style=for-the-badge&logo=github" width="160""/></a></p>
+<p><a href="https://github.com/breakdowns/slam-mirrorbot/wiki/Bot-commands-to-be-set-in-BotFather"> <img src="https://img.shields.io/badge/See%20On%20Wiki-grey?style=for-the-badge&logo=github" width="160""/></a></p>
 
 ## Getting Google OAuth API credential file
 - Visit the [Google Cloud Console](https://console.developers.google.com/apis/credentials)
@@ -375,7 +374,7 @@ python3 gen_sa_accounts.py --download-keys project_id
 python3 add_to_team_drive.py -d SharedTeamDriveSrcID
 ```
 
-# Youtube-dl authentication using [.netrc](https://github.com/SlamDevs/slam-mirrorbot/blob/master/.netrc) file
+# Youtube-dl authentication using [.netrc](https://github.com/anasty17/mirror-leech-telegram-bot/blob/master/.netrc) file
 For using your premium accounts in Youtube-dl or for protected Index Links, edit the netrc file according to following format:
 ```
 machine host login username password my_youtube_password
@@ -394,15 +393,15 @@ Thanks to:
 - [Dank-del](https://github.com/Dank-del) for base repo
 - [magneto261290](https://github.com/magneto261290) for some features
 - [SVR666](https://github.com/SVR666) for some features & fixes
-- [anasty17](https://github.com/anasty17) for some features & help
-- [breakdowns](https://github.com/breakdowns) for slam-mirrorbot
+- [anasty17](https://github.com/anasty17) for some good feature
+- [breakdowns](https://github.com/breakdowns) for base slam-mirrorbot
 - [yash-dk](https://github.com/yash-dk) for implementation qbittorrent in python on TorToolkit-Telegram repo
+- [Nekaru](https://github.com/Ncode2014) for keep continue re-cerminbot
 - [xyou365](https://github.com/xyou365) for Service Accounts script
 
 # for stuff i use 
 Thanks to:
 - [Marek Oron](https://unsplash.com/@marekokon) for banner image on this repo
 - [zevtyardt](https://github.com/zevtyardt) for some direct links
-- [CORE](https://github.com/c0re100) for Qbittorrent Enhanced Edition
 
 And many more people who aren't mentioned here, but can be found in [Contributors](https://github.com/SlamDevs/slam-mirrorbot/graphs/contributors).

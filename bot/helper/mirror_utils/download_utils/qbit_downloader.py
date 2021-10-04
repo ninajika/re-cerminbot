@@ -49,7 +49,8 @@ class QbitTorrent:
         self.update_interval = 2
         self.meta_time = time.time()
         self.stalled_time = time.time()
-        self.checked = False
+        self.sizechecked = False
+        self.dupchecked = False
 
     @new_thread
     def add_torrent(self, link, dire, listener, qbitsel):
@@ -206,36 +207,28 @@ class QbitTorrent:
                     self.updater.cancel()
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
-                if not self.checked:
-                    if STOP_DUPLICATE and not self.listener.isLeech:
-                        LOGGER.info("Checking File/Folder if already in Drive")
-                        qbname = os.listdir(f"{self.dire}")[0]
-                        if self.listener.isTar:
-                            qbname = (
-                                qbname + ".zip"
-                                if self.listener.isZip
-                                else qbname + ".tar"
-                            )
-                        if not self.listener.extract:
-                            gd = GoogleDriveHelper()
-                            qbmsg, button = gd.drive_list(qbname, True)
-                            if qbmsg:
-                                msg = "File/Folder sudah tersedia di Drive."
-                                self.client.torrents_pause(torrent_hashes=self.ext_hash)
-                                time.sleep(0.3)
-                                self.listener.onDownloadError(msg)
-                                sendMarkup(
-                                    "Berikut adalah hasil pencariannya:",
-                                    self.listener.bot,
-                                    self.listener.update,
-                                    button,
-                                )
-                                self.client.torrents_delete(
-                                    torrent_hashes=self.ext_hash
-                                )
-                                self.client.auth_log_out()
-                                self.updater.cancel()
-                                return
+                if STOP_DUPLICATE and not self.listener.isLeech and not self.dupchecked and os.path.isdir(f'{self.dire}'):
+                    LOGGER.info('Checking File/Folder if already in Drive')
+                    qbname = str(os.listdir(f'{self.dire}')[0])
+                    if qbname.endswith('.!qB'):
+                        qbname = os.path.splitext(qbname)[0]
+                    if self.listener.isTar:
+                        qbname = qbname + ".zip" if self.listener.isZip else qbname + ".tar"
+                    if not self.listener.extract:
+                        gd = GoogleDriveHelper()
+                        qbmsg, button = gd.drive_list(qbname, True)
+                        if qbmsg:
+                            msg = "File/Folder sudah tersedia di Drive."
+                            self.client.torrents_pause(torrent_hashes=self.ext_hash)
+                            time.sleep(0.3)
+                            self.listener.onDownloadError(msg)
+                            sendMarkup("Berikut adalah hasil pencariannya:", self.listener.bot, self.listener.update, button)
+                            self.client.torrents_delete(torrent_hashes=self.ext_hash)
+                            self.client.auth_log_out()
+                            self.updater.cancel()
+                            return
+                    self.dupchecked = True
+                if not self.sizechecked:
                     limit = None
                     if TAR_UNZIP_LIMIT is not None and (
                             self.listener.isTar or self.listener.extract
@@ -257,8 +250,8 @@ class QbitTorrent:
                             )
                             self.client.torrents_delete(torrent_hashes=self.ext_hash)
                             self.client.auth_log_out()
-                            self.updater.cancel()
-                    self.checked = True
+                            self.updater.cancel()     
+                    self.sizechecked = True
             elif tor_info.state == "stalledDL":
                 if (
                         time.time() - self.stalled_time >= 999999999
