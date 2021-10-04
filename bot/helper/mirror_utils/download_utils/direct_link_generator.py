@@ -26,7 +26,7 @@ from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 from bot.helper.telegram_helper.bot_commands import BotCommands
 
 
-def direct_link_generator(link: str):  # sourcery no-metrics
+def direct_link_generator(link: str):    # sourcery no-metrics
     """direct links generator"""
     if not link:
         raise DirectDownloadLinkException("Tidak ditemukan tautan!")
@@ -179,6 +179,16 @@ def sourceforge(url: str) -> str:
 def sourceforge2(url: str) -> str:
     """ Sourceforge Master.dl bypass """
     return f"{url}" + "?viasf=1"
+
+def anonfiles(url: str) -> str:
+    """Anonfiles direct generator
+    based on https://github.com/UsergeTeam/Userge/commit/9fdbb39abbb02611f4c3c5f414f59daa7459125f """
+    html_s = requests.get(url).content
+    soup = BeautifulSoup(html_s, "html.parser")
+    _url = soup.find("a", attrs={"class": "btn-primary"})["href"]
+    name = _url.rsplit("/", 1)[1]
+    return _url.replace(" ", "%20")
+
 
 
 def uptobox(url: str) -> str:
