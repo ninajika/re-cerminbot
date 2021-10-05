@@ -8,7 +8,7 @@ google-auth-httplib2
 google-auth-oauthlib
 heroku3
 html-telegraph-poster
-hachoir
+gunicorn
 js2py
 https://github.com/jusidama18/lk21/archive/refs/heads/main.zip
 lxml

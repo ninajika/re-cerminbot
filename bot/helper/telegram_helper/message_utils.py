@@ -27,19 +27,13 @@ def sendMessage(text: str, bot, update: Update):
     except Exception as e:
         LOGGER.error(str(e))
 
-
-def sendMarkup(
-    text: str, bot, update: Update, reply_markup: InlineKeyboardMarkup
-):
-    return bot.send_message(
-        update.message.chat_id,
-        reply_to_message_id=update.message.message_id,
-        text=text,
-        reply_markup=reply_markup,
-        allow_sending_without_reply=True,
-        parse_mode='HTMl'
-    )
-
+def sendMarkup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarkup):
+    try:
+        return bot.send_message(update.message.chat_id,
+                            reply_to_message_id=update.message.message_id,
+                            text=text, reply_markup=reply_markup, allow_sending_without_reply=True, parse_mode='HTMl')
+    except Exception as e:
+        LOGGER.error(str(e))
 
 def editMessage(text: str, message: Message, reply_markup=None):
     try:

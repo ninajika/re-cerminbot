@@ -124,20 +124,6 @@ class GoogleDriveHelper:
             self.uploaded_bytes += chunk_size
             self.total_time += self.update_interval
 
-    def __upload_empty_file(self, path, file_name, mime_type, parent_id=None):
-        media_body = MediaFileUpload(path,
-                                     mimetype=mime_type,
-                                     resumable=False)
-        file_metadata = {
-            'name': file_name,
-            'description': 'Uploaded using re-cerminbot',
-            'mimeType': mime_type,
-        }
-        if parent_id is not None:
-            file_metadata['parents'] = [parent_id]
-        return self.__service.files().create(supportsTeamDrives=True,
-                                             body=file_metadata, media_body=media_body).execute()  # noqa: E501
-
     def deletefile(self, link: str):
         try:
             file_id = self.getIdFromUrl(link)
@@ -617,6 +603,7 @@ class GoogleDriveHelper:
                 if nxt_page < self.num_of_path:
                     content += f'<b> | <a href="https://telegra.ph/{self.path[nxt_page]}">Maju</a></b>'  # noqa: E501
                     nxt_page += 1
+                    
             Telegraph(access_token=telegraph_token).edit_page(path=self.path[prev_page],  # noqa: E501
                                                               title='re-mirrorbot pencarian',  # noqa: E501
                                                               author_name='re-mirrorbot',  # noqa: E501
@@ -814,6 +801,7 @@ class GoogleDriveHelper:
 
         if len(self.telegraph_content) == 0:
             return "", None
+
 
         for content in self.telegraph_content:
             self.path.append(Telegraph(access_token=telegraph_token).create_page(  # noqa: E501
