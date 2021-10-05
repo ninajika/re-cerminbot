@@ -8,8 +8,8 @@ import time
 
 from pyrogram.errors import FloodWait
 
-from bot import app, DOWNLOAD_DIR, AS_DOCUMENT, AS_DOC_USERS, AS_MEDIA_USERS
-from bot.helper.ext_utils.fs_utils import take_ss, get_media_info
+from bot import AS_DOC_USERS, AS_DOCUMENT, AS_MEDIA_USERS, DOWNLOAD_DIR, app
+from bot.helper.ext_utils.fs_utils import get_media_info, take_ss
 
 LOGGER = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.ERROR)
@@ -101,7 +101,7 @@ class TgUploader:
                             os.remove(thumb)
                             return
                     if not filee.upper().endswith(("MKV", "MP4")):
-                        filee = os.path.splitext(filee)[0] + '.mp4'
+                        filee = os.path.splitext(filee)[0] + ".mp4"
                         new_path = os.path.join(dirpath, filee)
                         os.rename(up_path, new_path)
                         up_path = new_path
@@ -119,7 +119,7 @@ class TgUploader:
                         progress=self.upload_progress,
                     )
                 elif filee.upper().endswith(AUDIO_SUFFIXES):
-                    duration , artist, title = get_media_info(up_path)
+                    duration, artist, title = get_media_info(up_path)
                     self.sent_msg = self.sent_msg.reply_audio(
                         audio=up_path,
                         quote=True,
@@ -191,4 +191,4 @@ class TgUploader:
     def cancel_download(self):
         self.is_cancelled = True
         LOGGER.info(f"Cancelling Upload: {self.name}")
-        self.__listener.onUploadError('unggahan Anda telah dihentikan!')
+        self.__listener.onUploadError("unggahan Anda telah dihentikan!")
