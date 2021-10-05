@@ -1,6 +1,6 @@
 from .download_helper import DownloadHelper
 import time
-from youtube_dl import YoutubeDL, DownloadError
+from yt_dlp import YoutubeDL, DownloadError
 from bot import download_dict_lock, download_dict
 from ..status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
 import logging
@@ -17,7 +17,7 @@ class MyLogger:
     def debug(self, msg):
         LOGGER.debug(msg)
         # Hack to fix changing changing extension
-        match = re.search(r'.ffmpeg..Merging formats into..(.*?).$', msg)
+        match = re.search(r'.Merger..Merging formats into..(.*?).$', msg)
         if match and not self.obj.is_playlist:
             newname = match.group(1)
             newname = newname.split("/")
