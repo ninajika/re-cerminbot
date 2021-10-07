@@ -27,7 +27,6 @@ from bot import (
 )
 from bot.helper.ext_utils.bot_utils import (
     MirrorStatus,
-    check_limit,
     get_readable_file_size,
     getDownloadByGid,
     new_thread,
@@ -230,19 +229,17 @@ class QbitTorrent:
                     self.dupchecked = True
                 if not self.sizechecked:
                     limit = None
-                    if TAR_UNZIP_LIMIT is not None and (
-                            self.listener.isTar or self.listener.extract
-                    ):
-                        mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}"
+                    if TAR_UNZIP_LIMIT is not None and (self.listener.isTar or self.listener.extract):
+                        mssg = f'Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB'
                         limit = TAR_UNZIP_LIMIT
                     elif TORRENT_DIRECT_LIMIT is not None:
-                        mssg = f"Batas Torrent/Langsung adalah {TORRENT_DIRECT_LIMIT}"
+                        mssg = f'Batas Torrent adalah {TORRENT_DIRECT_LIMIT}GB'
                         limit = TORRENT_DIRECT_LIMIT
                     if limit is not None:
+                        LOGGER.info('Checking File/Folder Size...')
                         time.sleep(1)
                         size = tor_info.size
-                        result = check_limit(size, limit)
-                        if result:
+                        if size > limit * 1024**3:
                             self.client.torrents_pause(torrent_hashes=self.ext_hash)
                             time.sleep(0.3)
                             self.listener.onDownloadError(

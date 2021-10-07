@@ -5,7 +5,7 @@ from telegram.ext import CommandHandler
 
 from bot import (CLONE_LIMIT, LOGGER, STOP_DUPLICATE, Interval, dispatcher,
                  download_dict, download_dict_lock)
-from bot.helper.ext_utils.bot_utils import check_limit, get_readable_file_size
+from bot.helper.ext_utils.bot_utils import new_thread, get_readable_file_size
 from bot.helper.mirror_utils.status_utils.clone_status import CloneStatus
 from bot.helper.mirror_utils.upload_utils import gdriveTools
 from bot.helper.telegram_helper.bot_commands import BotCommands
@@ -13,6 +13,7 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import *
 
 
+@new_thread
 def cloneNode(update, context):
     args = update.message.text.split(" ", maxsplit=1)
     if len(args) > 1:
@@ -30,12 +31,12 @@ def cloneNode(update, context):
                 sendMarkup(msg3, context.bot, update, button)
                 return
         if CLONE_LIMIT is not None:
-            result = check_limit(size, CLONE_LIMIT)
-            if result:
+            LOGGER.info('Memeriksa Ukuran File/Folder...')
+            if size > CLONE_LIMIT * 1024**3:
                 msg2 = f'Gagal, batas klon adalah {CLONE_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(size)}.'
                 sendMessage(msg2, context.bot, update)
                 return
-        if files < 15:
+        if files < 10:
             msg = sendMessage(f"Kloning: <code>{link}</code>", context.bot, update)
             result, button = gd.clone(link)
             deleteMessage(context.bot, msg)

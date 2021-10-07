@@ -25,7 +25,7 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - Supported arm64
 - dropped using button template (cli still supported or using whatever method)
 
-## Additional Features On [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot)
+## Additional Features On [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and [mirror-leech-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
 - qBittorrent
 - Leech supported
 - Thumbnail supported
@@ -59,9 +59,9 @@ streamtape.com, streamsb.net, feurl.com, pixeldrain.com, racaty.net,
 uptobox.com (Uptobox account must be premium), solidfiles.com, sourceforge.com
 ```
 
-## From Original Repos Thx to [magneto261290](https://github.com/magneto261290)
-- Mirroring direct download links, Torrent, and Telegram files to Google Drive
-- Mirroring Mega.nz links to Google Drive (If you have non-premium Mega account, it will limit download to 5GB per 6 hours)
+## From official and Other Repositories
+- Mirror direct download links, Torrent, and Telegram files to Google Drive
+- Mirror Mega.nz links to Google Drive (If you have non-premium Mega account, it will limit download to 5GB per 6 hours)
 - Copy files from someone's Drive to your Drive (Using Autorclone)
 - Download/Upload progress, Speeds and ETAs
 - Mirror all Youtube-dl supported links
@@ -71,6 +71,10 @@ uptobox.com (Uptobox account must be premium), solidfiles.com, sourceforge.com
 - Service Account support
 - Delete files from Drive
 - Shortener support
+- Speedtest
+- Multiple Trackers support
+- Shell and Executor
+- Sudo with or without Database
 - Custom Filename (Only for direct links, Telegram files and Youtube-dl. Not for Mega links and Torrents)
 - Extracting and downloading password protected index links. See these examples:
 <p><a href="https://telegra.ph/Magneto-Python-Aria---Custom-Filename-Examples-01-20"> <img src="https://img.shields.io/badge/See%20Telegraph-grey?style=for-the-badge&logo=telegraph" width="170""/></a></p>
@@ -80,7 +84,7 @@ uptobox.com (Uptobox account must be premium), solidfiles.com, sourceforge.com
 ZIP, RAR, TAR, XZ, 7z, ISO, WIM, CAB, GZIP, BZIP2, 
 APM, ARJ, CHM, CPIO, CramFS, DEB, DMG, FAT, 
 HFS, LZH, LZMA, LZMA2, MBR, MSI, MSLZ, NSIS, 
-NTFS, RPM, SquashFS, UDF, VHD, XAR, Z.
+NTFS, RPM, SquashFS, UDF, VHD, XAR, Z, tar.xz
 ```
 
 </details>
@@ -178,10 +182,10 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `BLOCK_MEGA_FOLDER`: If you want to remove mega.nz folder support, set it to `True`.
 - `BLOCK_MEGA_LINKS`: If you want to remove mega.nz mirror support, set it to `True`.
 - `STOP_DUPLICATE`: (Leave empty if unsure) if this field is set to `True`, bot will check file in Drive, if it is present in Drive, downloading or cloning will be stopped. (**NOTE**: File will be checked using filename, not using filehash, so this feature is not perfect yet)
-- `CLONE_LIMIT`: To limit the size of Google Drive folder/file which you can clone (leave space between number and unit, Available units are (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
-- `MEGA_LIMIT`: To limit the size of Mega download (leave space between number and unit, available units are (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
-- `TORRENT_DIRECT_LIMIT`: To limit the Torrent/Direct mirror size, leave space between number and unit. Available units are (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
-- `TAR_UNZIP_LIMIT`: To limit the size of mirroring as Tar or unzipmirror. Available units are (gb or GB, tb or TB), Examples: `100 gb, 100 GB, 10 tb, 10 TB`
+- `CLONE_LIMIT`: To limit the size of Google Drive folder/file which you can clone. Don't add unit, the default unit is `GB`.
+- `MEGA_LIMIT`: To limit the size of Mega download. Don't add unit, the default unit is `GB`.
+- `TORRENT_DIRECT_LIMIT`: To limit the Torrent/Direct mirror size. Don't add unit, the default unit is `GB`.
+- `TAR_UNZIP_LIMIT`: To limit the size of mirroring as Tar or unzipmirror. Don't add unit, the default unit is `GB`.
 - `VIEW_LINK`: View Link button to open file Index Link in browser instead of direct download link, you can figure out if it's compatible with your Index code or not, open any video from you Index and check if its URL ends with `?a=view`, if yes make it `True` it will work (Compatible with https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index Code)
 - `UPTOBOX_TOKEN`: Uptobox token to mirror uptobox links. Get it from [Uptobox Premium Account](https://uptobox.com/my_account).
 - `HEROKU_EMAIL`: E-Mail of the Heroku account in which the above app will be deployed (**NOTE**: Only needed if you are deploying on Heroku with Github Workflow).
@@ -215,8 +219,44 @@ Three buttons are already added including Drive Link, Index Link, and View Link,
 </details>
 
 ## Bot commands to be set in [@BotFather](https://t.me/BotFather)
-
-<p><a href="https://github.com/breakdowns/slam-mirrorbot/wiki/Bot-commands-to-be-set-in-BotFather"> <img src="https://img.shields.io/badge/See%20On%20Wiki-grey?style=for-the-badge&logo=github" width="160""/></a></p>
+```
+mirror - Start Mirroring
+tarmirror - Start mirroring and upload as .tar
+zipmirror - Start mirroring and upload as .zip
+unzipmirror - Extract files
+qbmirror - Start Mirroring using qBittorrent
+qbtarmirror - Start mirroring and upload as .tar using qb
+qbzipmirror - Start mirroring and upload as .zip using qb
+qbunzipmirror - Extract files using qBittorrent
+leech - Leech Torrent/Direct link
+tarleech - Leech Torrent/Direct link and upload as .tar
+zipleech - Leech Torrent/Direct link and upload as .zip
+unzipleech - Leech Torrent/Direct link and extract
+qbleech - Leech Torrent/Magnet using qBittorrent
+qbtarleech - Leech Torrent/Magnet and upload as .tar using qb
+qbzipleech - Leech Torrent/Magnet and upload as .zip using qb
+qbunzipleech - Leech Torrent and extract using qb
+clone - Copy file/folder to Drive count - Count file/folder of Drive link
+watch - Mirror Youtube-dl supported link
+tarwatch - Mirror Youtube playlist link and upload as .tar
+zipwatch - Mirror Youtube playlist link and upload as .zip
+leechwatch - Leech through Youtube-dl supported link
+leechtarwatch - Leech Youtube playlist link and upload as .tar
+leechzipwatch - Leech Youtube playlist link and upload as .zip
+leechset - Leech settings
+setthumb - Set Thumbnail
+status - Get Mirror Status message
+list - [query] Searches files in Drive
+cancel - Cancel a task
+cancelall - Cancel all tasks
+del - [drive_url] Delete file from Drive
+log - Get the Bot Log [owner/sudo only]
+shell - Run commands in Shell [owner only]
+restart - Restart the Bot [owner/sudo only]
+stats - Bot Usage Stats
+ping - Ping the Bot
+help - All cmds with description
+```
 
 ## Getting Google OAuth API credential file
 - Visit the [Google Cloud Console](https://console.developers.google.com/apis/credentials)
@@ -326,7 +366,11 @@ python3 gen_sa_accounts.py --quick-setup 1 --new-only
 ```
 A folder named accounts will be created which will contain keys for the Service Accounts.
 
-Or you can create Service Accounts to current project, no need to create new one
+**NOTE:** 1 Service Account can upload/copy around 750 GB a day, 1 project can make 100 Service Accounts so you can upload 75 TB a day or clone 2 TB from each file creator (uploader email).
+
+**NOTE:** Add Service Accounts to team drive or google group no need to add them in both.
+
+### Create Service Accounts to current project (Recommended Method)
 
 - List your projects ids
 ```

@@ -17,7 +17,6 @@ from bot import (
     download_dict_lock,
 )
 from bot.helper.ext_utils.bot_utils import (
-    check_limit,
     get_mega_link_type,
     get_readable_file_size,
     new_thread,
@@ -212,15 +211,15 @@ class MegaDownloadHelper:
                     return
         limit = None
         if TAR_UNZIP_LIMIT is not None and (listener.isTar or listener.extract):
-            msg3 = f"Gagal, batas tar/unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
+            msg3 = f"Gagal, batas tar/unzip adalah {TAR_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = TAR_UNZIP_LIMIT
         elif MEGA_LIMIT is not None:
-            msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
+            msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = MEGA_LIMIT
         if limit is not None:
+            LOGGER.info('Memeriksa Ukuran File/Folder...')
             size = api.getSize(node)
-            result = check_limit(size, limit)
-            if result:
+            if size > limit * 1024**3:
                 sendMessage(msg3, listener.bot, listener.update)
                 executor.continue_event.set()
                 return

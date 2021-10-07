@@ -8,7 +8,6 @@ import subprocess
 import threading
 import time
 import urllib
-from fnmatch import fnmatch
 
 import requests
 from telegram import InlineKeyboardMarkup
@@ -149,15 +148,9 @@ class MirrorListener(listeners.MirrorListeners):
                 if os.path.isdir(m_path):
                     for dirpath, subdir, files in os.walk(m_path, topdown=False):
                         for file in files:
-                            suffixes = (
-                                '.part1.rar',
-                                '.part01.rar',
-                                '.part001.rar',
-                                '.part0001.rar',
-                            )
-                            if (
-                                file.endswith(".rar") and "part" not in file
-                            ) or file.endswith(suffixes):
+                            if re.search(r'\.part0*1.rar$', file) or re.search(r'\.7z.0*1$', file) \
+                               or (filee.endswith(".rar") and not re.search(r'\.part\d+.rar$', file)) \
+                               or re.search(r'\.zip.0*1$', file):
                                 m_path = os.path.join(dirpath, file)
                                 if pswd is not None:
                                     result = subprocess.run(
@@ -171,11 +164,8 @@ class MirrorListener(listeners.MirrorListeners):
                                     LOGGER.warning("Unable to extract archive!")
                                 break
                         for file in files:
-                            if (
-                                file.endswith(".rar")
-                                or fnmatch(file, "*.r[0-9]")
-                                or fnmatch(file, "*.r[0-9]*")
-                            ):
+                            if file.endswith(".rar") or re.search(r'\.r\d+$', file) \
+                               or re.search(r'\.7z.\d+$', file) or re.search(r'\.zip.\d+$', file):
                                 del_path = os.path.join(dirpath, file)
                                 os.remove(del_path)
                     path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
@@ -518,8 +508,8 @@ def _mirror(
             sendMessage(res, bot, update)
             return
         if TAR_UNZIP_LIMIT is not None:
-            result = bot_utils.check_limit(size, TAR_UNZIP_LIMIT)
-            if result:
+            LOGGER.info('Memeriksa Ukuran File/Folder...')
+            if size > TAR_UNZIP_LIMIT * 1024**3:
                 msg = f'Gagal, batas Tar/Unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. '
                 sendMessage(msg, bot, update)
                 return
