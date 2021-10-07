@@ -4,14 +4,14 @@ import os
 import random
 import socket
 import string
+import subprocess
 import threading
 import time
-import subprocess
-import requests
 
 import aria2p
 import psycopg2
 import qbittorrentapi as qba
+import requests
 import telegram.ext as tg
 from dotenv import load_dotenv
 from psycopg2 import Error
@@ -107,6 +107,7 @@ def get_client() -> qba.TorrentsAPIMixIn:
     except qba.LoginFailed as e:
         logging.error(str(e))
         return None
+
 
 
 DOWNLOAD_DIR = None
@@ -268,26 +269,17 @@ except KeyError:
     TORRENT_DIRECT_LIMIT = None
 try:
     CLONE_LIMIT = getConfig('CLONE_LIMIT')
-    if len(CLONE_LIMIT) == 0:
-        CLONE_LIMIT = None
-    else:
-        CLONE_LIMIT =int(CLONE_LIMIT)
+    CLONE_LIMIT = None if len(CLONE_LIMIT) == 0 else int(CLONE_LIMIT)
 except KeyError:
     CLONE_LIMIT = None
 try:
     MEGA_LIMIT = getConfig('MEGA_LIMIT')
-    if len(MEGA_LIMIT) == 0:
-        MEGA_LIMIT = None
-    else:
-        MEGA_LIMIT =int(MEGA_LIMIT)
+    MEGA_LIMIT = None if len(MEGA_LIMIT) == 0 else int(MEGA_LIMIT)
 except KeyError:
     MEGA_LIMIT = None
 try:
     TAR_UNZIP_LIMIT = getConfig('TAR_UNZIP_LIMIT')
-    if len(TAR_UNZIP_LIMIT) == 0:
-        TAR_UNZIP_LIMIT = None
-    else:
-        TAR_UNZIP_LIMIT = int(TAR_UNZIP_LIMIT)
+    TAR_UNZIP_LIMIT = None if len(TAR_UNZIP_LIMIT) == 0 else int(TAR_UNZIP_LIMIT)
 except KeyError:
     TAR_UNZIP_LIMIT = None
 try:

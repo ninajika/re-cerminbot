@@ -217,9 +217,9 @@ class MegaDownloadHelper:
             msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = MEGA_LIMIT
         if limit is not None:
-            LOGGER.info('Memeriksa Ukuran File/Folder...')
+            LOGGER.info("Memeriksa Ukuran File/Folder...")
             size = api.getSize(node)
-            if size > limit * 1024**3:
+            if size > limit * 1024 ** 3:
                 sendMessage(msg3, listener.bot, listener.update)
                 executor.continue_event.set()
                 return

@@ -140,8 +140,8 @@ class QbitTorrent:
                         try:
                             tor_info = tor_info[0]
                             if (
-                                    tor_info.state == "metaDL"
-                                    or tor_info.state == "checkingResumeData"
+                                tor_info.state == "metaDL"
+                                or tor_info.state == "checkingResumeData"
                             ):
                                 time.sleep(1)
                             else:
@@ -196,7 +196,7 @@ class QbitTorrent:
             if tor_info.state == "metaDL":
                 self.stalled_time = time.time()
                 if (
-                        time.time() - self.meta_time >= 999999999
+                    time.time() - self.meta_time >= 999999999
                 ):  # timeout while downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
@@ -206,13 +206,20 @@ class QbitTorrent:
                     self.updater.cancel()
             elif tor_info.state == "downloading":
                 self.stalled_time = time.time()
-                if STOP_DUPLICATE and not self.listener.isLeech and not self.dupchecked and os.path.isdir(f'{self.dire}'):
-                    LOGGER.info('Checking File/Folder if already in Drive')
-                    qbname = str(os.listdir(f'{self.dire}')[0])
-                    if qbname.endswith('.!qB'):
+                if (
+                    STOP_DUPLICATE
+                    and not self.listener.isLeech
+                    and not self.dupchecked
+                    and os.path.isdir(f"{self.dire}")
+                ):
+                    LOGGER.info("Checking File/Folder if already in Drive")
+                    qbname = str(os.listdir(f"{self.dire}")[0])
+                    if qbname.endswith(".!qB"):
                         qbname = os.path.splitext(qbname)[0]
                     if self.listener.isTar:
-                        qbname = qbname + ".zip" if self.listener.isZip else qbname + ".tar"
+                        qbname = (
+                            qbname + ".zip" if self.listener.isZip else qbname + ".tar"
+                        )
                     if not self.listener.extract:
                         gd = GoogleDriveHelper()
                         qbmsg, button = gd.drive_list(qbname, True)
@@ -221,7 +228,12 @@ class QbitTorrent:
                             self.client.torrents_pause(torrent_hashes=self.ext_hash)
                             time.sleep(0.3)
                             self.listener.onDownloadError(msg)
-                            sendMarkup("Berikut adalah hasil pencariannya:", self.listener.bot, self.listener.update, button)
+                            sendMarkup(
+                                "Berikut adalah hasil pencariannya:",
+                                self.listener.bot,
+                                self.listener.update,
+                                button,
+                            )
                             self.client.torrents_delete(torrent_hashes=self.ext_hash)
                             self.client.auth_log_out()
                             self.updater.cancel()
@@ -229,17 +241,19 @@ class QbitTorrent:
                     self.dupchecked = True
                 if not self.sizechecked:
                     limit = None
-                    if TAR_UNZIP_LIMIT is not None and (self.listener.isTar or self.listener.extract):
-                        mssg = f'Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB'
+                    if TAR_UNZIP_LIMIT is not None and (
+                        self.listener.isTar or self.listener.extract
+                    ):
+                        mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB"
                         limit = TAR_UNZIP_LIMIT
                     elif TORRENT_DIRECT_LIMIT is not None:
-                        mssg = f'Batas Torrent adalah {TORRENT_DIRECT_LIMIT}GB'
+                        mssg = f"Batas Torrent adalah {TORRENT_DIRECT_LIMIT}GB"
                         limit = TORRENT_DIRECT_LIMIT
                     if limit is not None:
-                        LOGGER.info('Checking File/Folder Size...')
+                        LOGGER.info("Checking File/Folder Size...")
                         time.sleep(1)
                         size = tor_info.size
-                        if size > limit * 1024**3:
+                        if size > limit * 1024 ** 3:
                             self.client.torrents_pause(torrent_hashes=self.ext_hash)
                             time.sleep(0.3)
                             self.listener.onDownloadError(
@@ -247,11 +261,11 @@ class QbitTorrent:
                             )
                             self.client.torrents_delete(torrent_hashes=self.ext_hash)
                             self.client.auth_log_out()
-                            self.updater.cancel()     
+                            self.updater.cancel()
                     self.sizechecked = True
             elif tor_info.state == "stalledDL":
                 if (
-                        time.time() - self.stalled_time >= 999999999
+                    time.time() - self.stalled_time >= 999999999
                 ):  # timeout after downloading metadata
                     self.client.torrents_pause(torrent_hashes=self.ext_hash)
                     time.sleep(0.3)
@@ -272,7 +286,7 @@ class QbitTorrent:
                 self.client.torrents_pause(torrent_hashes=self.ext_hash)
                 if self.qbitsel:
                     for dirpath, subdir, files in os.walk(
-                            f"{self.dire}", topdown=False
+                        f"{self.dire}", topdown=False
                     ):
                         for filee in files:
                             if filee.endswith(".!qB"):
@@ -281,7 +295,7 @@ class QbitTorrent:
                             if folder == ".unwanted":
                                 shutil.rmtree(os.path.join(dirpath, folder))
                     for dirpath, subdir, files in os.walk(
-                            f"{self.dire}", topdown=False
+                        f"{self.dire}", topdown=False
                     ):
                         if not os.listdir(dirpath):
                             os.rmdir(dirpath)
@@ -316,18 +330,18 @@ def get_confirm(update, context):
 
 
 def get_hash_magnet(mgt):
-    if mgt.startswith('magnet:'):
+    if mgt.startswith("magnet:"):
         _, _, _, _, query, _ = urlparse(mgt)
     qs = parse_qs(query)
-    v = qs.get('xt', None)
+    v = qs.get("xt", None)
     if v is None or v == []:
         LOGGER.error('Invalid magnet URI: no "xt" query parameter.')
         return
     v = v[0]
-    if not v.startswith('urn:btih:'):
+    if not v.startswith("urn:btih:"):
         LOGGER.error('Invalid magnet URI: "xt" value not valid for BitTorrent.')
         return
-    mgt = v[len('urn:btih:'):]
+    mgt = v[len("urn:btih:") :]
     return mgt.lower()
 
 

@@ -52,18 +52,22 @@ class AriaDownloadHelper:
                         return
             if dl is not None:
                 limit = None
-                if TAR_UNZIP_LIMIT is not None and (dl.getListener().isTar or dl.getListener().extract):
-                    mssg = f'Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB'
+                if TAR_UNZIP_LIMIT is not None and (
+                    dl.getListener().isTar or dl.getListener().extract
+                ):
+                    mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB"
                     limit = TAR_UNZIP_LIMIT
                 elif TORRENT_DIRECT_LIMIT is not None:
-                    mssg = f'Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}GB'
+                    mssg = f"Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}GB"
                     limit = TORRENT_DIRECT_LIMIT
                 if limit is not None:
-                    LOGGER.info('Memeriksa Ukuran File/Folder...')
+                    LOGGER.info("Memeriksa Ukuran File/Folder...")
                     sleep(1)
                     size = aria2.get_download(gid).total_length
-                    if size > limit * 1024**3:
-                        dl.getListener().onDownloadError(f'{mssg}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}')
+                    if size > limit * 1024 ** 3:
+                        dl.getListener().onDownloadError(
+                            f"{mssg}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}"
+                        )
                         aria2.remove([download], force=True)
                         return
         update_all_messages()
