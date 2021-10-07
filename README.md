@@ -13,15 +13,15 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/narima/megaria?label=Docker%20Pull)
 
-**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and new base from [mirror-leach-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
+**re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and Using Update from repo [mirror-leach-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
 
 
-## what some different feature rather the original [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot)
+## what some different feature rather the original Repo
 - adding more direct link generator
 - still using some old stuff like image url on speedtest,index link, mediainfo,usage and etc
-- you can change yt-dlp or ytdl because the docker has been included to dependency
-- still support and keep using latest updated slam-mirrorbot
-- Custom Progress bar
+- you can change yt-dlp or youtube-dl because the docker has been included to dependency
+- still support and keep using latest updated mirror-leach-telegram-bot
+- Custom Progress bar (from slam-mirrorbot)
 - Supported arm64
 - dropped using button template (cli still supported or using whatever method)
 
@@ -34,12 +34,8 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - Tar/Unzip G-Drive link 
 - Select files from Torrent before downloading using qbittorrent
 - Sudo with Database or without Database
-- Check Heroku dynos stats (optional)
-- Extracting **tar.xz** support
 - Counting files/folders from Google Drive link
 - View Link button instead of direct download link
-- Shell and Executor
-- Speedtest
 - Status Pages for unlimited tasks
 - Clone status
 - Search in multiple Drive folder/TD
@@ -434,11 +430,10 @@ Thanks to:
 - [out386](https://github.com/out386) heavily inspired from Telegram Bot which is written in JS
 - [Izzy12](https://github.com/lzzy12) for build up this bot from scratch
 - [jaskaranSM](https://github.com/jaskaranSM) for build up this bot from scratch
-- [Dank-del](https://github.com/Dank-del) for base repo
 - [magneto261290](https://github.com/magneto261290) for some features
 - [SVR666](https://github.com/SVR666) for some features & fixes
-- [anasty17](https://github.com/anasty17) for some good feature
-- [breakdowns](https://github.com/breakdowns) for base slam-mirrorbot
+- [anasty17](https://github.com/anasty17) for some nice feature & fixes
+- [breakdowns](https://github.com/breakdowns) for base repo (i'm using now)
 - [yash-dk](https://github.com/yash-dk) for implementation qbittorrent in python on TorToolkit-Telegram repo
 - [Nekaru](https://github.com/Ncode2014) for keep continue re-cerminbot
 - [xyou365](https://github.com/xyou365) for Service Accounts script
