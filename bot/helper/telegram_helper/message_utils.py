@@ -35,6 +35,7 @@ def sendMessage(text: str, bot, update: Update):
             text=text,
             allow_sending_without_reply=True,
             parse_mode="HTMl",
+            disable_web_page_preview=True,
         )
     except Exception as e:
         LOGGER.error(str(e))
@@ -49,6 +50,7 @@ def sendMarkup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarku
             reply_markup=reply_markup,
             allow_sending_without_reply=True,
             parse_mode="HTMl",
+            disable_web_page_preview=True,
         )
     except Exception as e:
         LOGGER.error(str(e))
@@ -62,6 +64,7 @@ def editMessage(text: str, message: Message, reply_markup=None):
             chat_id=message.chat.id,
             reply_markup=reply_markup,
             parse_mode="HTMl",
+            disable_web_page_preview=True,
         )
     except Exception as e:
         LOGGER.error(str(e))

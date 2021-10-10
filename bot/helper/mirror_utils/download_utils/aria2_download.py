@@ -5,10 +5,11 @@ from aria2p import API
 
 from bot import (
     STOP_DUPLICATE,
-    TAR_UNZIP_LIMIT,
+    TAR_UNTAR_LIMIT,
     TORRENT_DIRECT_LIMIT,
     aria2,
     download_dict_lock,
+    ZIP_UNZIP_LIMIT,
 )
 from bot.helper.ext_utils.bot_utils import *
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
@@ -25,7 +26,8 @@ class AriaDownloadHelper:
         if (
             STOP_DUPLICATE
             or TORRENT_DIRECT_LIMIT is not None
-            or TAR_UNZIP_LIMIT is not None
+            or TAR_UNTAR_LIMIT is not None
+            or ZIP_UNZIP_LIMIT is not None
         ):
             sleep(1)
             dl = getDownloadByGid(gid)
@@ -33,8 +35,10 @@ class AriaDownloadHelper:
             if STOP_DUPLICATE and dl is not None and not dl.getListener().isLeech:
                 LOGGER.info("Checking File/Folder if already in Drive...")
                 sname = aria2.get_download(gid).name
+                if dl.getListener().isZip:
+                    sname = sname + ".zip"
                 if dl.getListener().isTar:
-                    sname = sname + ".zip" if dl.getListener().isZip else sname + ".tar"
+                    sname = sname + ".tar"
                 if not dl.getListener().extract:
                     gdrive = GoogleDriveHelper()
                     smsg, button = gdrive.drive_list(sname, True)
@@ -52,11 +56,14 @@ class AriaDownloadHelper:
                         return
             if dl is not None:
                 limit = None
-                if TAR_UNZIP_LIMIT is not None and (
+                if TAR_UNTAR_LIMIT is not None and (
                     dl.getListener().isTar or dl.getListener().extract
                 ):
-                    mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB"
-                    limit = TAR_UNZIP_LIMIT
+                    mssg = f"Batas tar/Untar adalah {TAR_UNTAR_LIMIT}GB"
+                    limit = TAR_UNTAR_LIMIT
+                elif ZIP_UNZIP_LIMIT is not None and (dl.getListener().isZip or dl.getListener().extract):
+                    mssg = f'Batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB'
+                    limit = ZIP_UNZIP_LIMIT
                 elif TORRENT_DIRECT_LIMIT is not None:
                     mssg = f"Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}GB"
                     limit = TORRENT_DIRECT_LIMIT

@@ -12,7 +12,8 @@ from bot import (
     MEGA_LIMIT,
     MEGA_PASSWORD,
     STOP_DUPLICATE,
-    TAR_UNZIP_LIMIT,
+    TAR_UNTAR_LIMIT,
+    ZIP_UNZIP_LIMIT,
     download_dict,
     download_dict_lock,
 )
@@ -199,8 +200,10 @@ class MegaDownloadHelper:
         if STOP_DUPLICATE and not listener.isLeech:
             LOGGER.info("Checking File/Folder if already in Drive")
             mname = node.getName()
+            if listener.isZip:
+                mname = mname + ".zip"
             if listener.isTar:
-                mname = mname + ".zip" if listener.isZip else mname + ".tar"
+                mname = mname + ".tar"
             if not listener.extract:
                 gd = GoogleDriveHelper()
                 smsg, button = gd.drive_list(mname, True)
@@ -210,9 +213,12 @@ class MegaDownloadHelper:
                     executor.continue_event.set()
                     return
         limit = None
-        if TAR_UNZIP_LIMIT is not None and (listener.isTar or listener.extract):
-            msg3 = f"Gagal, batas tar/unzip adalah {TAR_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
-            limit = TAR_UNZIP_LIMIT
+        if TAR_UNTAR_LIMIT is not None and (listener.isTar or listener.extract):
+            msg3 = f"Gagal, batas tar/untar adalah {TAR_UNTAR_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
+            limit = TAR_UNTAR_LIMIT
+        elif ZIP_UNZIP_LIMIT is not None and (listener.isZip or listener.extract):
+            msg3 = msg3 = f'Gagal, batas zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}.'
+            limit = ZIP_UNZIP_LIMIT
         elif MEGA_LIMIT is not None:
             msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = MEGA_LIMIT

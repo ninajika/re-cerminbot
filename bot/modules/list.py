@@ -4,8 +4,10 @@ from bot import LOGGER, dispatcher
 from bot.helper.telegram_helper.message_utils import sendMessage, editMessage
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.ext_utils.bot_utils import new_thread
 
 
+@new_thread
 def list_drive(update, context):
     try:
         search = update.message.text.split(' ', maxsplit=1)[1]
@@ -17,8 +19,7 @@ def list_drive(update, context):
         if button:
             editMessage(msg, reply, button)
         else:
-            editMessage(f'Tidak ada hasil ditemukan untuk <code>{search}</code>', reply, button)
-
+            editMessage(f'Tidak ada hasil ditemukan untuk <code>{search}</code>', reply)
     except IndexError:
         sendMessage(
             'Kirim kunci pencarian bersama dengan perintah',

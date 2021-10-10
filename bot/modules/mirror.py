@@ -26,7 +26,8 @@ from bot import (
     INDEX_URL,
     SHORTENER,
     SHORTENER_API,
-    TAR_UNZIP_LIMIT,
+    TAR_UNTAR_LIMIT,
+    ZIP_UNZIP_LIMIT,
     TG_SPLIT_SIZE,
     VIEW_LINK,
     Interval,
@@ -55,6 +56,7 @@ from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.status_utils.gdownload_status import DownloadStatus
 from bot.helper.mirror_utils.status_utils.split_status import SplitStatus
 from bot.helper.mirror_utils.status_utils.tar_status import TarStatus
+from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
 from bot.helper.mirror_utils.status_utils.tg_upload_status import TgUploadStatus
 from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
 from bot.helper.mirror_utils.upload_utils import gdriveTools, pyrogramEngine
@@ -116,19 +118,18 @@ class MirrorListener(listeners.MirrorListeners):
                 name = os.listdir(f"{DOWNLOAD_DIR}{self.uid}")[0]
             m_path = f"{DOWNLOAD_DIR}{self.uid}/{name}"
         if self.isTar:
+            with download_dict_lock:
+                download_dict[self.uid] = TarStatus(name, m_path, size)
+                path = fs_utils.tar(m_path)
+        if self.isZip:
             try:
                 with download_dict_lock:
-                    download_dict[self.uid] = TarStatus(name, m_path, size)
-                if self.isZip:
-                    pswd = self.pswd
-                    path = m_path + ".zip"
-                    LOGGER.info(f"Zip: orig_path: {m_path}, zip_path: {path}")
-                    if pswd is not None:
-                        subprocess.run(["7z", "a", "-mx=0", f"-p{pswd}", path, m_path])
-                    else:
-                        subprocess.run(["7z", "a", "-mx=0", path, m_path])
-                else:
-                    path = fs_utils.tar(m_path)
+                    download_dict[self.uid] = ZipStatus(name, m_path, size)
+                pswd = self.pswd
+                path = m_path + ".zip"
+                LOGGER.info(f'Zip: orig_path: {m_path}, zip_path: {path}')
+                if pswd is not None:
+                    subprocess.run(["7z", "a", "-mx=0", f"-p{pswd}", path, m_path])
             except FileNotFoundError:
                 LOGGER.info("File to archive not found!")
                 self.onUploadError("Internal error occurred!!")
@@ -400,13 +401,14 @@ def _mirror(
 ):
     # sourcery no-metrics
     mesg = update.message.text.split('\n')
-    message_args = mesg[0].split(' ')
+    message_args = mesg[0].split(' ', maxsplit=1)
     name_args = mesg[0].split('|')
     qbitsel = False
     try:
         link = message_args[1]
         if link == "s":
             qbitsel = True
+            message_args = mesg[0].split(' ', maxsplit=2)
             link = message_args[2]
         if link.startswith("|") or link.startswith("pswd: "):
             link = ''
@@ -432,9 +434,7 @@ def _mirror(
     if pswd is not None:
         pswd = pswd.groups()
         pswd = " ".join(pswd)
-    if link != '':
-        LOGGER.info(link)
-    link = link.strip()
+        link = re.split(r"pswd:|\|", link)[0]
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         file = None
@@ -450,7 +450,7 @@ def _mirror(
         ):
             if file is None:
                 reply_text = reply_to.text
-                reply_text = re.split('\n ', reply_text)[0]
+                reply_text = reply_text.split('\n')[0]
                 if bot_utils.is_url(reply_text) or bot_utils.is_magnet(reply_text):
                     link = reply_text
 
@@ -468,6 +468,8 @@ def _mirror(
                 return
             else:
                 link = file.get_file().file_path
+    if link != '':
+        LOGGER.info(link)
     if (
         bot_utils.is_url(link)
         and not bot_utils.is_magnet(link)
@@ -517,14 +519,25 @@ def _mirror(
                 update,
             )
             return
+        if not isZip and not extract and not isLeech:
+            sendMessage(
+                f"Gunakan /{BotCommands.CloneCommand} untuk mengkloning file/folder Google Drive\nGunakan /{BotCommands.ZipMirrorCommand} untuk membuat tar folder Google Drive\nGunakan /{BotCommands.UnzipMirrorCommand} untuk mengekstrak arsip file Google Drive",
+                bot,
+                update,
+            )
+            return
         res, size, name, files = gdriveTools.GoogleDriveHelper().clonehelper(link)
         if res != "":
             sendMessage(res, bot, update)
             return
-        if TAR_UNZIP_LIMIT is not None:
+        if TAR_UNTAR_LIMIT is not None:
             LOGGER.info("Memeriksa Ukuran File/Folder...")
-            if size > TAR_UNZIP_LIMIT * 1024 ** 3:
-                msg = f"Gagal, batas Tar/Unzip adalah {TAR_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
+            if size > TAR_UNTAR_LIMIT * 1024 ** 3:
+                msg = f"Gagal, batas Tar/Untar adalah {TAR_UNTAR_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
+                sendMessage(msg, bot, update)
+                return
+            elif ZIP_UNZIP_LIMIT is not None:
+                msg = f"Gagal, batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
                 sendMessage(msg, bot, update)
                 return
         LOGGER.info(f"Download Name : {name}")

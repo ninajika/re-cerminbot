@@ -39,6 +39,7 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - Status Pages for unlimited tasks
 - Clone status
 - Search in multiple Drive folder/TD
+- Search for torrents with variable plugins using qBittorrent search engine
 - Many bugs has been fixed
 - Torrent search Supported:
 ```
@@ -71,9 +72,8 @@ uptobox.com (Uptobox account must be premium), solidfiles.com, sourceforge.com
 - Multiple Trackers support
 - Shell and Executor
 - Sudo with or without Database
-- Custom Filename (Only for direct links, Telegram files and Youtube-dl. Not for Mega links and Torrents)
-- Extracting and downloading password protected index links. See these examples:
-<p><a href="https://telegra.ph/Magneto-Python-Aria---Custom-Filename-Examples-01-20"> <img src="https://img.shields.io/badge/See%20Telegraph-grey?style=for-the-badge&logo=telegraph" width="170""/></a></p>
+- Custom Filename (Only for direct links, Telegram files and Youtube-dl. Not for Mega links, Gdrive links or Torrents)
+- Extract or Compress password protected files.
 
 - Extract these filetypes and uploads to Google Drive
 ```
@@ -84,6 +84,9 @@ NTFS, RPM, SquashFS, UDF, VHD, XAR, Z, tar.xz
 ```
 
 </details>
+
+**See these examples for custom filename, Extract/Compress password protected files and downlaod from protected links**
+<p><a href="https://telegra.ph/Magneto-Python-Aria---Custom-Filename-Examples-01-20"> <img src="https://img.shields.io/badge/See%20Telegraph-grey?style=for-the-badge&logo=telegraph" width="170""/></a></p>
 
 # How to deploy?
 Deploying is pretty much straight forward and is divided into several steps as follows:
@@ -181,7 +184,8 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `CLONE_LIMIT`: To limit the size of Google Drive folder/file which you can clone. Don't add unit, the default unit is `GB`.
 - `MEGA_LIMIT`: To limit the size of Mega download. Don't add unit, the default unit is `GB`.
 - `TORRENT_DIRECT_LIMIT`: To limit the Torrent/Direct mirror size. Don't add unit, the default unit is `GB`.
-- `TAR_UNZIP_LIMIT`: To limit the size of mirroring as Tar or unzipmirror. Don't add unit, the default unit is `GB`.
+- `TAR_UNTAR_LIMIT`: To limit the size of mirroring as Tar or untarmirror. Don't add unit, the default unit is `GB`.
+- `ZIP_UNZIP_LIMIT`: To limit the size of mirroring as Zip or unzipmirror. Don't add unit, the default unit is `GB`.
 - `VIEW_LINK`: View Link button to open file Index Link in browser instead of direct download link, you can figure out if it's compatible with your Index code or not, open any video from you Index and check if its URL ends with `?a=view`, if yes make it `True` it will work (Compatible with https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index Code)
 - `UPTOBOX_TOKEN`: Uptobox token to mirror uptobox links. Get it from [Uptobox Premium Account](https://uptobox.com/my_account).
 - `HEROKU_EMAIL`: E-Mail of the Heroku account in which the above app will be deployed (**NOTE**: Only needed if you are deploying on Heroku with Github Workflow).
@@ -201,8 +205,9 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 exe.io, gplinks.in, shrinkme.io, urlshortx.com, shortzon.com, bit.ly,
 shorte.st, linkvertise.com , ouo.io
 ```
-
 Above are the supported URL Shorteners. Except these only some URL Shorteners are supported.
+
+- `SEARCH_PLUGINS`: List of qBittorrent search plugins (github raw links). I have added some plugins, you can remove/add plugins as you want. Main Source: [qBittorrent Search Plugins (Official/Unofficial)](https://github.com/qbittorrent/search-plugins/wiki/Unofficial-search-plugins) (**NOTE**: Many plugins will leads to slow search process).
 ### Add more buttons (Optional Field)
 Three buttons are already added including Drive Link, Index Link, and View Link, you can add extra buttons, if you don't know what are the below entries, simply leave them empty.
 - `BUTTON_FOUR_NAME`:

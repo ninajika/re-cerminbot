@@ -18,7 +18,8 @@ from torrentool.api import Torrent
 from bot import (
     BASE_URL,
     STOP_DUPLICATE,
-    TAR_UNZIP_LIMIT,
+    TAR_UNTAR_LIMIT,
+    ZIP_UNZIP_LIMIT,
     TORRENT_DIRECT_LIMIT,
     dispatcher,
     download_dict,
@@ -182,7 +183,6 @@ class QbitTorrent:
         except Exception as e:
             LOGGER.error(str(e))
             sendMessage(str(e), listener.bot, listener.update)
-            self.client.torrents_delete(torrent_hashes=self.ext_hash, delete_files=True)
             self.client.auth_log_out()
 
     def update(self):
@@ -216,10 +216,10 @@ class QbitTorrent:
                     qbname = str(os.listdir(f"{self.dire}")[0])
                     if qbname.endswith(".!qB"):
                         qbname = os.path.splitext(qbname)[0]
+                    if self.listener.isZip:
+                        qbname = qbname + ".zip"
                     if self.listener.isTar:
-                        qbname = (
-                            qbname + ".zip" if self.listener.isZip else qbname + ".tar"
-                        )
+                        qbname = qbname + ".tar"
                     if not self.listener.extract:
                         gd = GoogleDriveHelper()
                         qbmsg, button = gd.drive_list(qbname, True)
@@ -241,11 +241,14 @@ class QbitTorrent:
                     self.dupchecked = True
                 if not self.sizechecked:
                     limit = None
-                    if TAR_UNZIP_LIMIT is not None and (
+                    if TAR_UNTAR_LIMIT is not None and (
                         self.listener.isTar or self.listener.extract
                     ):
-                        mssg = f"Batas tar/Unzip adalah {TAR_UNZIP_LIMIT}GB"
-                        limit = TAR_UNZIP_LIMIT
+                        mssg = f"Batas tar/Untar adalah {TAR_UNTAR_LIMIT}GB"
+                        limit = TAR_UNTAR_LIMIT
+                    elif ZIP_UNZIP_LIMIT is not None and (self.listener.isZip or self.listener.extract):
+                        mssg = f'Batas zip/unzip adalah {ZIP_UNZIP_LIMIT}GB'
+                        limit = ZIP_UNZIP_LIMIT
                     elif TORRENT_DIRECT_LIMIT is not None:
                         mssg = f"Batas Torrent adalah {TORRENT_DIRECT_LIMIT}GB"
                         limit = TORRENT_DIRECT_LIMIT

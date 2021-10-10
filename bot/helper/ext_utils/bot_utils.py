@@ -108,12 +108,12 @@ def getAllDownload():
 
 
 def get_progress_bar_string(status):
-    completed = status.processed_bytes() / 8
-    total = status.size_raw() / 8
+    completed = status.processed_bytes() / 9
+    total = status.size_raw() / 9
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
-    cFull = p // 8
-    cPart = p % 8 - 1
+    cFull = p // 9
+    cPart = p % 9 - 1
     p_str = FINISHED_PROGRESS_STR * cFull
     if cPart >= 0:
         # p_str += PROGRESS_INCOMPLETE[cPart]
@@ -137,7 +137,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             start = COUNT
         for index, download in enumerate(list(download_dict.values())[start:], start=1):
             msg += f"<b>Namafile:</b> <code>{download.name()}</code>"
-            msg += f"\n<b>Status:</b> <i>{download.status()}</i>"
+            msg += f"\n<b>Status: </b> <i>{download.status()}</i>"
             if download.status() not in [
                 MirrorStatus.STATUS_ARCHIVING,
                 MirrorStatus.STATUS_EXTRACTING,

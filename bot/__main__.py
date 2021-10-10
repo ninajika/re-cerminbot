@@ -21,6 +21,7 @@ from bot import (
     IMAGE_URL,
     IS_VPS,
     PORT,
+    nox,
     alive,
     app,
     bot,
@@ -51,7 +52,7 @@ from .modules import (
     reboot,
     shell,
     speedtest,
-    torrent_search,
+    search,
     usage,
     watch,
     leech_settings,
@@ -121,11 +122,12 @@ def restart(update, context):
         f.truncate(0)
         f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
     fs_utils.clean_all()
-    alive.terminate()
+    alive.kill()
     process = psutil.Process(web.pid)
     for proc in process.children(recursive=True):
         proc.kill()
     process.kill()
+    nox.kill()
     os.execl(executable, executable, "-m", "bot")
 
 
@@ -203,6 +205,8 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.ListCommand}</b> [search term]: Mencari istilah pencarian di Google Drive, Jika ditemukan balasan dengan tautan
 <br><br>
+<b>/{BotCommands.SearchCommand}</b> [query]: Cari torrent dengan plugin pencarian qbittorrent yang diinstal
+<br><br>
 <b>/{BotCommands.StatusCommand}</b>: Menunjukkan status semua unduhan
 <br><br>
 <b>/{BotCommands.StatsCommand}</b>: Tampilkan Statistik Mesin The Bot diselenggarakan
@@ -236,8 +240,6 @@ help_string = f'''
 /{BotCommands.SpeedCommand}: Periksa kecepatan internet tuan rumah
 
 /{BotCommands.MediaInfoCommand}: Dapatkan info terperinci tentang Media Jawab (hanya untuk file telegram)
-
-/{BotCommands.TsHelpCommand}: Dapatkan bantuan untuk modul pencarian Torrent
 '''
 
 
@@ -280,7 +282,6 @@ botcmds = [
         f"{BotCommands.MediaInfoCommand}",
         "Dapatkan info detail tentang media yang dibalas",
     ),
-    (f"{BotCommands.TsHelpCommand}", "Dapatkan bantuan untuk modul pencarian Torrent"),
 ]
 '''
 
