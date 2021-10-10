@@ -7,9 +7,9 @@ from bot import (
     STOP_DUPLICATE,
     TAR_UNTAR_LIMIT,
     TORRENT_DIRECT_LIMIT,
+    ZIP_UNZIP_LIMIT,
     aria2,
     download_dict_lock,
-    ZIP_UNZIP_LIMIT,
 )
 from bot.helper.ext_utils.bot_utils import *
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
@@ -61,8 +61,10 @@ class AriaDownloadHelper:
                 ):
                     mssg = f"Batas tar/Untar adalah {TAR_UNTAR_LIMIT}GB"
                     limit = TAR_UNTAR_LIMIT
-                elif ZIP_UNZIP_LIMIT is not None and (dl.getListener().isZip or dl.getListener().extract):
-                    mssg = f'Batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB'
+                elif ZIP_UNZIP_LIMIT is not None and (
+                    dl.getListener().isZip or dl.getListener().extract
+                ):
+                    mssg = f"Batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB"
                     limit = ZIP_UNZIP_LIMIT
                 elif TORRENT_DIRECT_LIMIT is not None:
                     mssg = f"Batas Torrent/Direct adalah {TORRENT_DIRECT_LIMIT}GB"

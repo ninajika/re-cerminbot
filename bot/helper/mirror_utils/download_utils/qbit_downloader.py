@@ -19,8 +19,8 @@ from bot import (
     BASE_URL,
     STOP_DUPLICATE,
     TAR_UNTAR_LIMIT,
-    ZIP_UNZIP_LIMIT,
     TORRENT_DIRECT_LIMIT,
+    ZIP_UNZIP_LIMIT,
     dispatcher,
     download_dict,
     download_dict_lock,
@@ -246,8 +246,10 @@ class QbitTorrent:
                     ):
                         mssg = f"Batas tar/Untar adalah {TAR_UNTAR_LIMIT}GB"
                         limit = TAR_UNTAR_LIMIT
-                    elif ZIP_UNZIP_LIMIT is not None and (self.listener.isZip or self.listener.extract):
-                        mssg = f'Batas zip/unzip adalah {ZIP_UNZIP_LIMIT}GB'
+                    elif ZIP_UNZIP_LIMIT is not None and (
+                        self.listener.isZip or self.listener.extract
+                    ):
+                        mssg = f"Batas zip/unzip adalah {ZIP_UNZIP_LIMIT}GB"
                         limit = ZIP_UNZIP_LIMIT
                     elif TORRENT_DIRECT_LIMIT is not None:
                         mssg = f"Batas Torrent adalah {TORRENT_DIRECT_LIMIT}GB"

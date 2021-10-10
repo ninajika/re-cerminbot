@@ -217,7 +217,9 @@ class MegaDownloadHelper:
             msg3 = f"Gagal, batas tar/untar adalah {TAR_UNTAR_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
             limit = TAR_UNTAR_LIMIT
         elif ZIP_UNZIP_LIMIT is not None and (listener.isZip or listener.extract):
-            msg3 = msg3 = f'Gagal, batas zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}.'
+            msg3 = (
+                msg3
+            ) = f"Gagal, batas zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}."
             limit = ZIP_UNZIP_LIMIT
         elif MEGA_LIMIT is not None:
             msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "

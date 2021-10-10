@@ -131,7 +131,7 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             dick_no = len(download_dict)
             global pages
             pages = math.ceil(dick_no / STATUS_LIMIT)
-            if PAGE_NO > pages != 0:
+            if pages != 0 and PAGE_NO > pages:
                 globals()['COUNT'] -= STATUS_LIMIT
                 globals()['PAGE_NO'] -= 1
             start = COUNT
