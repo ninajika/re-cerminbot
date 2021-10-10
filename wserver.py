@@ -12,9 +12,11 @@ from aiohttp import web
 
 import nodes
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    handlers=[logging.FileHandler('log.txt'), logging.StreamHandler()],
-                    level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()],
+    level=logging.INFO,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -563,7 +565,7 @@ section span{
 """
 
 
-@routes.get('/slam/files/{hash_id}')
+@routes.get("/slam/files/{hash_id}")
 async def list_torrent_contents(request):
 
     torr = request.match_info["hash_id"]
@@ -572,10 +574,11 @@ async def list_torrent_contents(request):
 
     if "pin_code" not in gets.keys():
         rend_page = code_page.replace("{form_url}", f"/slam/files/{torr}")
-        return web.Response(text=rend_page, content_type='text/html')
+        return web.Response(text=rend_page, content_type="text/html")
 
-    client = qba.Client(host="localhost", port="8090",
-                        username="admin", password="adminadmin")
+    client = qba.Client(
+        host="localhost", port="8090", username="admin", password="adminadmin"
+    )
     client.auth_log_in()
     try:
         res = client.torrents_files(torrent_hash=torr)
@@ -602,9 +605,10 @@ async def list_torrent_contents(request):
 
     rend_page = page.replace("{My_content}", cont[0])
     rend_page = rend_page.replace(
-        "{form_url}", f"/slam/files/{torr}?pin_code={pincode}")
+        "{form_url}", f"/slam/files/{torr}?pin_code={pincode}"
+    )
     client.auth_log_out()
-    return web.Response(text=rend_page, content_type='text/html')
+    return web.Response(text=rend_page, content_type="text/html")
 
 
 async def re_verfiy(paused, resumed, client, torr):
@@ -635,17 +639,20 @@ async def re_verfiy(paused, resumed, client, torr):
             break
         LOGGER.info("Reverification Failed: correcting stuff...")
         client.auth_log_out()
-        client = qba.Client(host="localhost", port="8090",
-                            username="admin", password="adminadmin")
+        client = qba.Client(
+            host="localhost", port="8090", username="admin", password="adminadmin"
+        )
         client.auth_log_in()
         try:
             client.torrents_file_priority(
-                torrent_hash=torr, file_ids=paused, priority=0)
+                torrent_hash=torr, file_ids=paused, priority=0
+            )
         except:
             LOGGER.error("Errored in reverification paused")
         try:
             client.torrents_file_priority(
-                torrent_hash=torr, file_ids=resumed, priority=1)
+                torrent_hash=torr, file_ids=resumed, priority=1
+            )
         except:
             LOGGER.error("Errored in reverification resumed")
         client.auth_log_out()
@@ -656,12 +663,13 @@ async def re_verfiy(paused, resumed, client, torr):
     return True
 
 
-@routes.post('/slam/files/{hash_id}')
+@routes.post("/slam/files/{hash_id}")
 async def set_priority(request):
 
     torr = request.match_info["hash_id"]
-    client = qba.Client(host="localhost", port="8090",
-                        username="admin", password="adminadmin")
+    client = qba.Client(
+        host="localhost", port="8090", username="admin", password="adminadmin"
+    )
     client.auth_log_in()
 
     data = await request.post()
@@ -682,16 +690,14 @@ async def set_priority(request):
     resume = resume.strip("|")
 
     try:
-        client.torrents_file_priority(
-            torrent_hash=torr, file_ids=pause, priority=0)
+        client.torrents_file_priority(torrent_hash=torr, file_ids=pause, priority=0)
     except qba.NotFound404Error:
         raise web.HTTPNotFound()
     except:
         LOGGER.error("Errored in paused")
 
     try:
-        client.torrents_file_priority(
-            torrent_hash=torr, file_ids=resume, priority=1)
+        client.torrents_file_priority(torrent_hash=torr, file_ids=resume, priority=1)
     except qba.NotFound404Error:
         raise web.HTTPNotFound()
     except:
@@ -704,25 +710,34 @@ async def set_priority(request):
     return await list_torrent_contents(request)
 
 
-@routes.get('/')
+@routes.get("/")
 async def homepage(request):
 
-    return web.Response(text="<h1>See re-cerminbot <a href='https://github.com/Ncode2014/re-cerminbot'>@GitHub</a> By <a href='https://github.com/Ncode2014/re-cerminbot'>Ncode2014 (thx to breakdowns)</a></h1>", content_type="text/html")
+    return web.Response(
+        text="<h1>See re-cerminbot <a href='https://github.com/Ncode2014/re-cerminbot'>@GitHub</a> By <a href='https://github.com/Ncode2014/re-cerminbot'>Ncode2014 (thx to breakdowns)</a></h1>",
+        content_type="text/html",
+    )
 
 
 async def e404_middleware(app, handler):
-
     async def middleware_handler(request):
 
         try:
             response = await handler(request)
             if response.status == 404:
-                return web.Response(text="<h1>404: Page not found</h2><br><h3>re-cerminbot</h3>", content_type="text/html")
+                return web.Response(
+                    text="<h1>404: Page not found</h2><br><h3>re-cerminbot</h3>",
+                    content_type="text/html",
+                )
             return response
         except web.HTTPException as ex:
             if ex.status == 404:
-                return web.Response(text="<h1>404: Page not found</h2><br><h3>re-cerminbot</h3>", content_type="text/html")
+                return web.Response(
+                    text="<h1>404: Page not found</h2><br><h3>re-cerminbot</h3>",
+                    content_type="text/html",
+                )
             raise
+
     return middleware_handler
 
 

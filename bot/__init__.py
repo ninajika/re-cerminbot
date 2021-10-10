@@ -199,9 +199,7 @@ if DB_URI is not None:
         conn.close()
 
 LOGGER.info("Generating USER_SESSION_STRING")
-app = Client(
-    're-cerminbot', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN  # noqa: E501
-)  # noqa: E501
+app = Client('pyrogram', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN, workers=343)
 
 # Generate Telegraph Token
 sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
@@ -228,6 +226,8 @@ except KeyError:
     STATUS_LIMIT = None
 try:
     MEGA_API_KEY = getConfig('MEGA_API_KEY')
+    if len(MEGA_API_KEY) == 0:
+        raise KeyError
 except KeyError:
     logging.warning('MEGA API KEY not provided!')
     MEGA_API_KEY = None
@@ -251,6 +251,8 @@ except KeyError:
     HEROKU_APP_NAME = None
 try:
     UPTOBOX_TOKEN = getConfig('UPTOBOX_TOKEN')
+    if len(UPTOBOX_TOKEN) == 0:
+        raise KeyError
 except KeyError:
     logging.warning('UPTOBOX_TOKEN not provided!')
     UPTOBOX_TOKEN = None
@@ -288,11 +290,6 @@ try:
         MEGA_LIMIT = float(MEGA_LIMIT)
 except KeyError:
     MEGA_LIMIT = None
-try:
-    TAR_UNTAR_LIMIT = getConfig('TAR_UNTAR_LIMIT')
-    TAR_UNTAR_LIMIT = None if len(TAR_UNTAR_LIMIT) == 0 else float(TAR_UNTAR_LIMIT)
-except KeyError:
-    TAR_UNTAR_LIMIT = None
 try:
     ZIP_UNZIP_LIMIT = getConfig('ZIP_UNZIP_LIMIT')
     ZIP_UNZIP_LIMIT = None if len(ZIP_UNZIP_LIMIT) == 0 else float(ZIP_UNZIP_LIMIT)
@@ -404,6 +401,17 @@ try:
 except KeyError:
     AS_DOCUMENT = False
 try:
+    EQUAL_SPLITS = getConfig('EQUAL_SPLITS')
+    EQUAL_SPLITS = EQUAL_SPLITS.lower() == 'true'
+except KeyError:
+    EQUAL_SPLITS = False
+try:
+    CUSTOM_FILENAME = getConfig('CUSTOM_FILENAME')
+    if len(CUSTOM_FILENAME) == 0:
+        raise KeyError
+except KeyError:
+    CUSTOM_FILENAME = None
+try:
     RECURSIVE_SEARCH = getConfig('RECURSIVE_SEARCH')
     RECURSIVE_SEARCH = RECURSIVE_SEARCH.lower() == 'true'
 except KeyError:
@@ -477,6 +485,7 @@ if SEARCH_PLUGINS is not None:
     SEARCH_PLUGINS = json.loads(SEARCH_PLUGINS)
     qbclient = get_client()
     qbclient.search_install_plugin(SEARCH_PLUGINS)
-updater = tg.Updater(token=BOT_TOKEN, request_kwargs={'read_timeout': 30, 'connect_timeout': 10})
+
+updater = tg.Updater(token=BOT_TOKEN, request_kwargs={'read_timeout': 30, 'connect_timeout': 15})
 bot = updater.bot
 dispatcher = updater.dispatcher

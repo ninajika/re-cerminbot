@@ -2,6 +2,11 @@ import shutil
 import time
 
 import psutil
+from telegram import InlineKeyboardMarkup
+from telegram.error import BadRequest, RetryAfter, TimedOut
+from telegram.message import Message
+from telegram.update import Update
+
 from bot import (
     AUTO_DELETE_MESSAGE_DURATION,
     DOWNLOAD_STATUS_UPDATE_INTERVAL,
@@ -21,10 +26,6 @@ from bot.helper.ext_utils.bot_utils import (
     get_readable_time,
     setInterval,
 )
-from telegram import InlineKeyboardMarkup
-from telegram.error import BadRequest, TimedOut
-from telegram.message import Message
-from telegram.update import Update
 
 
 def sendMessage(text: str, bot, update: Update):
@@ -37,6 +38,10 @@ def sendMessage(text: str, bot, update: Update):
             parse_mode="HTMl",
             disable_web_page_preview=True,
         )
+    except RetryAfter as r:
+        LOGGER.error(str(r))
+        time.sleep(r.retry_after)
+        return sendMessage(text, bot, update)
     except Exception as e:
         LOGGER.error(str(e))
 
@@ -52,6 +57,10 @@ def sendMarkup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarku
             parse_mode="HTMl",
             disable_web_page_preview=True,
         )
+    except RetryAfter as r:
+        LOGGER.error(str(r))
+        time.sleep(r.retry_after)
+        return sendMarkup(text, bot, update, reply_markup)
     except Exception as e:
         LOGGER.error(str(e))
 
@@ -66,6 +75,10 @@ def editMessage(text: str, message: Message, reply_markup=None):
             parse_mode="HTMl",
             disable_web_page_preview=True,
         )
+    except RetryAfter as r:
+        LOGGER.error(str(r))
+        time.sleep(r.retry_after)
+        return editMessage(text, message, reply_markup)
     except Exception as e:
         LOGGER.error(str(e))
 
@@ -140,13 +153,10 @@ def update_all_messages():
     with status_reply_dict_lock:
         for chat_id in list(status_reply_dict.keys()):
             if status_reply_dict[chat_id] and msg != status_reply_dict[chat_id].text:
-                try:
-                    if buttons == "":
-                        editMessage(msg, status_reply_dict[chat_id])
-                    else:
-                        editMessage(msg, status_reply_dict[chat_id], buttons)
-                except Exception as e:
-                    LOGGER.error(str(e))
+                if buttons == "":
+                    editMessage(msg, status_reply_dict[chat_id])
+                else:
+                    editMessage(msg, status_reply_dict[chat_id], buttons)
                 status_reply_dict[chat_id].text = msg
 
 

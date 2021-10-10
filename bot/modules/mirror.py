@@ -55,7 +55,6 @@ from bot.helper.mirror_utils.status_utils import listeners
 from bot.helper.mirror_utils.status_utils.extract_status import ExtractStatus
 from bot.helper.mirror_utils.status_utils.gdownload_status import DownloadStatus
 from bot.helper.mirror_utils.status_utils.split_status import SplitStatus
-from bot.helper.mirror_utils.status_utils.tar_status import TarStatus
 from bot.helper.mirror_utils.status_utils.tg_upload_status import TgUploadStatus
 from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
 from bot.helper.mirror_utils.status_utils.zip_status import ZipStatus
@@ -290,10 +289,12 @@ class MirrorListener(listeners.MirrorListeners):
                     msg_id = files[item]
                     link = f"https://t.me/c/{chat_id}/{msg_id}"
                     fmsg += f"{index}. <a href='{link}'>{item}</a>\n"
-                    if len(fmsg) > 3000:
+                    if len(fmsg.encode('utf-8') + msg.encode('utf-8')) > 4000:
+                        time.sleep(1.5)
                         sendMessage(msg + fmsg, self.bot, self.update)
                         fmsg = ''
                 if fmsg != '':
+                    time.sleep(1.5)
                     sendMessage(msg + fmsg, self.bot, self.update)
             with download_dict_lock:
                 try:
@@ -397,7 +398,7 @@ class MirrorListener(listeners.MirrorListeners):
 
 
 def _mirror(
-    bot, update, isTar=False, extract=False, isZip=False, isQbit=False, isLeech=False
+    bot, update, extract=False, isZip=False, isQbit=False, isLeech=False
 ):
     # sourcery no-metrics
     mesg = update.message.text.split('\n')
@@ -458,8 +459,7 @@ def _mirror(
 
             elif isQbit:
                 file_name = str(time.time()).replace(".", "") + ".torrent"
-                file.get_file().download(custom_path=f"{file_name}")
-                link = f"{file_name}"
+                link = file.get_file().download(custom_path=file_name)
             elif file.mime_type != "application/x-bittorrent":
                 listener = MirrorListener(
                     bot, update, pswd, isTar, extract, isZip, isLeech=isLeech
@@ -511,19 +511,12 @@ def _mirror(
                 sendMessage(f"{e}", bot, update)
                 return
 
-    listener = MirrorListener(bot, update, pswd, isTar, extract, isZip, isQbit, isLeech)
+    listener = MirrorListener(bot, update, pswd, extract, isZip, isQbit, isLeech)
 
     if bot_utils.is_gdrive_link(link):
-        if not isTar and not extract and not isLeech:
-            sendMessage(
-                f"Gunakan /{BotCommands.CloneCommand} untuk mengkloning file/folder Google Drive\nGunakan /{BotCommands.TarMirrorCommand} untuk membuat tar folder Google Drive\nGunakan /{BotCommands.UnzipMirrorCommand} untuk mengekstrak arsip file Google Drive",
-                bot,
-                update,
-            )
-            return
         if not isZip and not extract and not isLeech:
             sendMessage(
-                f"Gunakan /{BotCommands.CloneCommand} untuk mengkloning file/folder Google Drive\nGunakan /{BotCommands.ZipMirrorCommand} untuk membuat tar folder Google Drive\nGunakan /{BotCommands.UnzipMirrorCommand} untuk mengekstrak arsip file Google Drive",
+                f"Gunakan /{BotCommands.CloneCommand} untuk mengkloning file/folder Google Drive\nGunakan /{BotCommands.ZipMirrorCommand} untuk membuat zip folder Google Drive\nGunakan /{BotCommands.UnzipMirrorCommand} untuk mengekstrak arsip file Google Drive",
                 bot,
                 update,
             )
@@ -532,13 +525,8 @@ def _mirror(
         if res != "":
             sendMessage(res, bot, update)
             return
-        if TAR_UNTAR_LIMIT is not None:
-            LOGGER.info("Memeriksa Ukuran File/Folder...")
-            if size > TAR_UNTAR_LIMIT * 1024 ** 3:
-                msg = f"Gagal, batas Tar/Untar adalah {TAR_UNTAR_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
-                sendMessage(msg, bot, update)
-                return
-            elif ZIP_UNZIP_LIMIT is not None:
+        if ZIP_UNZIP_LIMIT is not None:
+            if size > ZIP_UNZIP_LIMIT * 1024 ** 3:
                 msg = f"Gagal, batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
                 sendMessage(msg, bot, update)
                 return
@@ -578,11 +566,6 @@ def _mirror(
 def mirror(update, context):
     _mirror(context.bot, update)
 
-
-def tar_mirror(update, context):
-    _mirror(context.bot, update, True)
-
-
 def unzip_mirror(update, context):
     _mirror(context.bot, update, extract=True)
 
@@ -593,10 +576,6 @@ def zip_mirror(update, context):
 
 def qb_mirror(update, context):
     _mirror(context.bot, update, isQbit=True)
-
-
-def qb_tar_mirror(update, context):
-    _mirror(context.bot, update, True, isQbit=True)
 
 
 def qb_unzip_mirror(update, context):
@@ -611,10 +590,6 @@ def leech(update, context):
     _mirror(context.bot, update, isLeech=True)
 
 
-def tar_leech(update, context):
-    _mirror(context.bot, update, True, isLeech=True)
-
-
 def unzip_leech(update, context):
     _mirror(context.bot, update, extract=True, isLeech=True)
 
@@ -625,10 +600,6 @@ def zip_leech(update, context):
 
 def qb_leech(update, context):
     _mirror(context.bot, update, isQbit=True, isLeech=True)
-
-
-def qb_tar_leech(update, context):
-    _mirror(context.bot, update, True, isQbit=True, isLeech=True)
 
 
 def qb_unzip_leech(update, context):
@@ -645,12 +616,7 @@ mirror_handler = CommandHandler(
     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
     run_async=True,
 )
-tar_mirror_handler = CommandHandler(
-    BotCommands.TarMirrorCommand,
-    tar_mirror,
-    filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
-    run_async=True,
-)
+
 unzip_mirror_handler = CommandHandler(
     BotCommands.UnzipMirrorCommand,
     unzip_mirror,
@@ -666,12 +632,6 @@ zip_mirror_handler = CommandHandler(
 qb_mirror_handler = CommandHandler(
     BotCommands.QbMirrorCommand,
     qb_mirror,
-    filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
-    run_async=True,
-)
-qb_tar_mirror_handler = CommandHandler(
-    BotCommands.QbTarMirrorCommand,
-    qb_tar_mirror,
     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
     run_async=True,
 )
@@ -693,12 +653,6 @@ leech_handler = CommandHandler(
     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
     run_async=True,
 )
-tar_leech_handler = CommandHandler(
-    BotCommands.TarLeechCommand,
-    tar_leech,
-    filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
-    run_async=True,
-)
 unzip_leech_handler = CommandHandler(
     BotCommands.UnzipLeechCommand,
     unzip_leech,
@@ -717,12 +671,6 @@ qb_leech_handler = CommandHandler(
     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
     run_async=True,
 )
-qb_tar_leech_handler = CommandHandler(
-    BotCommands.QbTarLeechCommand,
-    qb_tar_leech,
-    filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
-    run_async=True,
-)
 qb_unzip_leech_handler = CommandHandler(
     BotCommands.QbUnzipLeechCommand,
     qb_unzip_leech,
@@ -736,18 +684,14 @@ qb_zip_leech_handler = CommandHandler(
     run_async=True,
 )
 dispatcher.add_handler(mirror_handler)
-dispatcher.add_handler(tar_mirror_handler)
 dispatcher.add_handler(unzip_mirror_handler)
 dispatcher.add_handler(zip_mirror_handler)
 dispatcher.add_handler(qb_mirror_handler)
-dispatcher.add_handler(qb_tar_mirror_handler)
 dispatcher.add_handler(qb_unzip_mirror_handler)
 dispatcher.add_handler(qb_zip_mirror_handler)
 dispatcher.add_handler(leech_handler)
-dispatcher.add_handler(tar_leech_handler)
 dispatcher.add_handler(unzip_leech_handler)
 dispatcher.add_handler(zip_leech_handler)
 dispatcher.add_handler(qb_leech_handler)
-dispatcher.add_handler(qb_tar_leech_handler)
 dispatcher.add_handler(qb_unzip_leech_handler)
 dispatcher.add_handler(qb_zip_leech_handler)

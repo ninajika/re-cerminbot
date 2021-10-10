@@ -11,7 +11,7 @@ import time
 import magic
 from PIL import Image
 
-from bot import DOWNLOAD_DIR, LOGGER, TG_SPLIT_SIZE, aria2, get_client
+from bot import DOWNLOAD_DIR, EQUAL_SPLITS, LOGGER, TG_SPLIT_SIZE, aria2, get_client
 
 from .exceptions import NotSupportedExtractionArchive
 
@@ -63,7 +63,7 @@ def get_path_size(path):
             total_size += os.path.getsize(abs_path)
     return total_size
 
-
+"""
 def tar(org_path):
     tar_path = org_path + ".tar"
     path = pathlib.PurePath(org_path)
@@ -72,7 +72,7 @@ def tar(org_path):
     tar.add(org_path, arcname=path.name)
     tar.close()
     return tar_path
-
+"""
 
 def get_base_name(orig_path: str):
     if orig_path.endswith(".tar.bz2"):
@@ -197,10 +197,10 @@ def take_ss(video_file):
 def split(path, size, filee, dirpath, split_size, start_time=0, i=1):
     if filee.upper().endswith(VIDEO_SUFFIXES):
         base_name, extension = os.path.splitext(filee)
-        total_duration = get_media_info(path)[0] - 7
-        split_size = split_size - 2500000
         parts = math.ceil(size / TG_SPLIT_SIZE)
-        while start_time < total_duration:
+        split_size = (size // parts) - 2500000 if EQUAL_SPLITS else split_size - 2500000
+
+        while i <= parts:
             parted_name = "{}.part{}{}".format(
                 str(base_name), str(i).zfill(3), str(extension)
             )
@@ -217,6 +217,8 @@ def split(path, size, filee, dirpath, split_size, start_time=0, i=1):
                     str(start_time),
                     "-fs",
                     str(split_size),
+                    "-async",
+                    "1",
                     "-strict",
                     "-2",
                     "-c",
@@ -225,18 +227,13 @@ def split(path, size, filee, dirpath, split_size, start_time=0, i=1):
                 ]
             )
             out_size = get_path_size(out_path)
-            if out_size > TG_SPLIT_SIZE:
+            if out_size > 2097152000:
                 dif = out_size - TG_SPLIT_SIZE
                 split_size = split_size - dif + 2000000
                 os.remove(out_path)
                 return split(path, size, filee, dirpath, split_size, start_time, i)
             lpd = get_media_info(out_path)[0]
-            start_time = start_time + lpd - 5
-            if i > parts:
-                LOGGER.warning(
-                    "Maybe something went Wrong while splitting, check last part of each splited video"
-                )
-                break
+            start_time += lpd - 3
             i = i + 1
     else:
         out_path = os.path.join(dirpath, filee + ".")
@@ -253,18 +250,22 @@ def split(path, size, filee, dirpath, split_size, start_time=0, i=1):
 
 
 def get_media_info(path):
-    result = subprocess.check_output(
-        [
-            "ffprobe",
-            "-hide_banner",
-            "-loglevel",
-            "error",
-            "-print_format",
-            "json",
-            "-show_format",
-            path,
-        ]
-    ).decode("utf-8")
+    try:
+        result = subprocess.check_output(
+            [
+                "ffprobe",
+                "-hide_banner",
+                "-loglevel",
+                "error",
+                "-print_format",
+                "json",
+                "-show_format",
+                path,
+            ]
+        ).decode("utf-8")
+    except:
+        LOGGER.error(f"ffprobe error with code {result.returncode}")
+        return 0, None, None
     fields = json.loads(result)["format"]
     try:
         duration = round(float(fields["duration"]))

@@ -92,7 +92,7 @@ def stats(update, context):
 def start(update, context):
     buttons = button_build.ButtonMaker()
     buttons.buildbutton("Repo", "https://github.com/Ncode2014/re-cerminbot")
-    buttons.buildbutton("Support Group", "https://t.me/rumahmirorr")
+    buttons.buildbutton("Group", "https://t.me/rumahmirorr")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     if (
             CustomFilters.authorized_user(update)
@@ -147,15 +147,11 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.MirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring tautan ke Google Drive.
 <br><br>
-<b>/{BotCommands.TarMirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring dan unggah yang diarsipkan (.tar) versi unduhan
-<br><br>
 <b>/{BotCommands.ZipMirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring dan unggah yang diarsipkan (.zip) versi unduhan
 <br><br>
 <b>/{BotCommands.UnzipMirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring dan file yang diunduh adalah arsip, mengekstraknya ke Google Drive
 <br><br>
 <b>/{BotCommands.QbMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent, Gunakan /{BotCommands.QbMirrorCommand} s untuk memilih file sebelum mengunduh
-<br><br>
-<b>/{BotCommands.QbTarMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan unggah versi unduhan (.tar) yang diarsipkan
 <br><br>
 <b>/{BotCommands.QbZipMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan unggah versi unduhan (.zip) yang diarsipkan
 <br><br>
@@ -163,15 +159,11 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.LeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram, Gunakan <b>/{BotCommands.LeechCommand} s</b> untuk memilih file sebelum leeching
 <br><br>
-<b>/{BotCommands.TarLeechCommand}</b> [download_url][magnet_link]:  Mulai leeching ke Telegram dan unggah sebagai (.tar)
-<br><br>
 <b>/{BotCommands.ZipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan unggah sebagai (.zip)
 <br><br>
 <b>/{BotCommands.UnzipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Telegram
 <br><br>
 <b>/{BotCommands.QbLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent, Gunakan <b>/{BotCommands.QbLeechCommand} s</b> untuk memilih file sebelum leeching
-<br><br>
-<b>/{BotCommands.QbTarLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan unggah sebagai (.tar)
 <br><br>
 <b>/{BotCommands.QbZipLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan unggah sebagai (.zip)
 <br><br>
@@ -185,13 +177,9 @@ help_string_telegraph = f'''<br>
 <br><br>
 <b>/{BotCommands.WatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui yt-dlp/youtube-dl. Ketik /{BotCommands.WatchCommand} atau ketik /tolong
 <br><br>
-<b>/{BotCommands.TarWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui yt-dlp/youtube-dl dan tar sebelum mengunggah
-<br><br>
 <b>/{BotCommands.ZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui youtube-dl atau yt-dlp dan zip sebelum mengunggah
 <br><br>
 <b>/{BotCommands.LeechWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp
-<br><br>
-<b>/{BotCommands.LeechTarWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp dan tar sebelum mengunggah 
 <br><br>
 <b>/{BotCommands.LeechZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp dan zip sebelum mengunggah
 <br><br>
@@ -254,21 +242,15 @@ def bot_help(update, context):
 botcmds = [
     (f"{BotCommands.HelpCommand}", "Dapatkan bantuan terperinci"),
     (f"{BotCommands.MirrorCommand}", "Mulai mirroring"),
-    (f"{BotCommands.TarMirrorCommand}", "Mulai mirroring dan unggah sebagai .tar"),
     (f"{BotCommands.UnzipMirrorCommand}", "Ekstrak file"),
     (f"{BotCommands.ZipMirrorCommand}", "Mulai mirroring dan unggah sebagai .zip"),
     (f"{BotCommands.CloneCommand}", "Salin file/folder ke Drive"),
     (f"{BotCommands.CountCommand}", "Hitung file/folder dari link Drive"),
     (f"{BotCommands.DeleteCommand}", "Hapus file dari drive"),
     (f'{BotCommands.QbMirrorCommand}','Mulai Mencerminkan menggunakan qBittorrent'),
-    (f'{BotCommands.QbTarMirrorCommand}','Mulai mirroring dan unggah sebagai .tar menggunakan qb'),
     (f'{BotCommands.QbZipMirrorCommand}','Mulai mirroring dan unggah sebagai .zip menggunakan qb'),
     (f'{BotCommands.QbUnzipMirrorCommand}','Ekstrak file melalui qBitorrent'),
     (f"{BotCommands.WatchCommand}", "Mirror video/audio menggunakan YouTube-DL"),
-    (
-        f"{BotCommands.TarWatchCommand}",
-        "Cermin tautan daftar putar YouTube sebagai .tar",
-    ),
     (f'{BotCommands.ZipWatchCommand}','Cerminkan tautan daftar putar Youtube sebagai .zip'),
     (f"{BotCommands.CancelMirror}", "Batalkan tugas"),
     (f"{BotCommands.CancelAllCommand}", "Batalkan semua tugas"),

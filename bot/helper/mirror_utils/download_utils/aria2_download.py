@@ -5,7 +5,6 @@ from aria2p import API
 
 from bot import (
     STOP_DUPLICATE,
-    TAR_UNTAR_LIMIT,
     TORRENT_DIRECT_LIMIT,
     ZIP_UNZIP_LIMIT,
     aria2,
@@ -26,7 +25,6 @@ class AriaDownloadHelper:
         if (
             STOP_DUPLICATE
             or TORRENT_DIRECT_LIMIT is not None
-            or TAR_UNTAR_LIMIT is not None
             or ZIP_UNZIP_LIMIT is not None
         ):
             sleep(1)
@@ -37,8 +35,6 @@ class AriaDownloadHelper:
                 sname = aria2.get_download(gid).name
                 if dl.getListener().isZip:
                     sname = sname + ".zip"
-                if dl.getListener().isTar:
-                    sname = sname + ".tar"
                 if not dl.getListener().extract:
                     gdrive = GoogleDriveHelper()
                     smsg, button = gdrive.drive_list(sname, True)
@@ -56,12 +52,7 @@ class AriaDownloadHelper:
                         return
             if dl is not None:
                 limit = None
-                if TAR_UNTAR_LIMIT is not None and (
-                    dl.getListener().isTar or dl.getListener().extract
-                ):
-                    mssg = f"Batas tar/Untar adalah {TAR_UNTAR_LIMIT}GB"
-                    limit = TAR_UNTAR_LIMIT
-                elif ZIP_UNZIP_LIMIT is not None and (
+                if ZIP_UNZIP_LIMIT is not None and (
                     dl.getListener().isZip or dl.getListener().extract
                 ):
                     mssg = f"Batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB"
