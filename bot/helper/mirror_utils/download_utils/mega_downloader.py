@@ -26,9 +26,6 @@ from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.message_utils import *
 
 
-class MegaDownloaderException(Exception):
-    pass
-
 
 class MegaAppListener(MegaListener):
     _NO_EVENT_ON = (MegaRequest.TYPE_LOGIN, MegaRequest.TYPE_FETCH_NODES)
@@ -167,10 +164,6 @@ class MegaDownloadHelper:
     @staticmethod
     @new_thread
     def add_download(mega_link: str, path: str, listener):
-        if MEGA_API_KEY is None:
-            raise MegaDownloaderException(
-                "Mega API KEY not provided! Cannot mirror Mega links"
-            )
         executor = AsyncExecutor()
         api = MegaApi(MEGA_API_KEY, None, None, "telegram-mirror-bot")
         global listeners

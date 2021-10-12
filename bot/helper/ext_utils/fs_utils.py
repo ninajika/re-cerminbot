@@ -63,6 +63,7 @@ def get_path_size(path):
             total_size += os.path.getsize(abs_path)
     return total_size
 
+
 """
 def tar(org_path):
     tar_path = org_path + ".tar"
@@ -73,6 +74,7 @@ def tar(org_path):
     tar.close()
     return tar_path
 """
+
 
 def get_base_name(orig_path: str):
     if orig_path.endswith(".tar.bz2"):
@@ -263,10 +265,10 @@ def get_media_info(path):
                 path,
             ]
         ).decode("utf-8")
-    except:
-        LOGGER.error(f"ffprobe error with code {result.returncode}")
+        fields = json.loads(result)["format"]
+    except Exception as e:
+        LOGGER.error(str(e))
         return 0, None, None
-    fields = json.loads(result)["format"]
     try:
         duration = round(float(fields["duration"]))
     except:
