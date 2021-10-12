@@ -208,6 +208,7 @@ shorte.st, linkvertise.com , ouo.io
 Above are the supported URL Shorteners. Except these only some URL Shorteners are supported.
 
 - `SEARCH_PLUGINS`: List of qBittorrent search plugins (github raw links). I have added some plugins, you can remove/add plugins as you want. Main Source: [qBittorrent Search Plugins (Official/Unofficial)](https://github.com/qbittorrent/search-plugins/wiki/Unofficial-search-plugins) (**NOTE**: Many plugins will leads to slow search process).
+
 ### Add more buttons (Optional Field)
 Three buttons are already added including Drive Link, Index Link, and View Link, you can add extra buttons, if you don't know what are the below entries, simply leave them empty.
 - `BUTTON_FOUR_NAME`:
@@ -368,7 +369,6 @@ A folder named accounts will be created which will contain keys for the Service 
 **NOTE:** Add Service Accounts to team drive or google group no need to add them in both.
 
 ### Create Service Accounts to Current Project (Recommended Method)
-
 - List your projects ids
 ```
 python3 gen_sa_accounts.py --list-projects
@@ -387,6 +387,13 @@ python3 gen_sa_accounts.py --download-keys $PROJECTID
 ```
 If you want to add Service Accounts to Google Group, follow these steps
 
+### Another Quick Method
+```
+python3 gen_sa_accounts.py --quick-setup 1 --new-only
+```
+A folder named accounts will be created which will contain keys for the Service Accounts.
+
+#### Add Service Accounts to Google Group
 - Mount accounts folder
 ```
 cd accounts
@@ -416,9 +423,10 @@ python3 add_to_team_drive.py -d SharedTeamDriveSrcID
 ```
 
 # Multi Search IDs
-To use list from multi TD/folder. Run driveid.py in your terminal and follow it. It will generate a file **drive_folder** when you finish or u can simply create `drive_folder` file in working directory and fill, check below format:
+To use list from multi TD/folder. Run driveid.py in your terminal and follow it. It will generate **drive_folder** file or u can simply create `drive_folder` file in working directory and fill it, check below format:
 ```
 MyTdName folderID/tdID IndexLink(if available)
+MyTdName2 folderID/tdID IndexLink(if available)
 ```
 
 # Youtube-dl and Index Authentication Using .netrc File
