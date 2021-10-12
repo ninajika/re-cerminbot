@@ -31,7 +31,6 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - Thumbnail supported
 - Size limiting for Torrent/Direct, Tar/Unzip, Mega and clone
 - Stop duplicates for all tasks except for youtube-dl tasks 
-- Tar/Unzip G-Drive link 
 - Select files from Torrent before downloading using qbittorrent
 - Sudo with Database or without Database
 - Counting files/folders from Google Drive link
@@ -184,8 +183,7 @@ Fill up rest of the fields. Meaning of each field is discussed below:
 - `CLONE_LIMIT`: To limit the size of Google Drive folder/file which you can clone. Don't add unit, the default unit is `GB`.
 - `MEGA_LIMIT`: To limit the size of Mega download. Don't add unit, the default unit is `GB`.
 - `TORRENT_DIRECT_LIMIT`: To limit the Torrent/Direct mirror size. Don't add unit, the default unit is `GB`.
-- `TAR_UNTAR_LIMIT`: To limit the size of mirroring as Tar or untarmirror. Don't add unit, the default unit is `GB`.
-- `ZIP_UNZIP_LIMIT`: To limit the size of mirroring as Tar or unzipmirror. Don't add unit, the default unit is `GB`.
+- `ZIP_UNZIP_LIMIT`: To limit the size of mirroring as zip or unzipmirror. Don't add unit, the default unit is `GB`.
 - `VIEW_LINK`: View Link button to open file Index Link in browser instead of direct download link, you can figure out if it's compatible with your Index code or not, open any video from you Index and check if its URL ends with `?a=view`, if yes make it `True` it will work (Compatible with https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index Code)
 - `UPTOBOX_TOKEN`: Uptobox token to mirror uptobox links. Get it from [Uptobox Premium Account](https://uptobox.com/my_account).
 - `HEROKU_EMAIL`: E-Mail of the Heroku account in which the above app will be deployed (**NOTE**: Only needed if you are deploying on Heroku with Github Workflow).
@@ -225,27 +223,21 @@ Three buttons are already added including Drive Link, Index Link, and View Link,
 
 ```
 mirror - Start Mirroring
-tarmirror - Start mirroring and upload as .tar
 zipmirror - Start mirroring and upload as .zip
 unzipmirror - Extract files
 qbmirror - Start Mirroring using qBittorrent
-qbtarmirror - Start mirroring and upload as .tar using qb
 qbzipmirror - Start mirroring and upload as .zip using qb
 qbunzipmirror - Extract files using qBittorrent
 leech - Leech Torrent/Direct link
-tarleech - Leech Torrent/Direct link and upload as .tar
 zipleech - Leech Torrent/Direct link and upload as .zip
 unzipleech - Leech Torrent/Direct link and extract
 qbleech - Leech Torrent/Magnet using qBittorrent
-qbtarleech - Leech Torrent/Magnet and upload as .tar using qb
 qbzipleech - Leech Torrent/Magnet and upload as .zip using qb
 qbunzipleech - Leech Torrent and extract using qb
 clone - Copy file/folder to Drive count - Count file/folder of Drive link
 watch - Mirror Youtube-dl supported link
-tarwatch - Mirror Youtube playlist link and upload as .tar
 zipwatch - Mirror Youtube playlist link and upload as .zip
 leechwatch - Leech through Youtube-dl supported link
-leechtarwatch - Leech Youtube playlist link and upload as .tar
 leechzipwatch - Leech Youtube playlist link and upload as .zip
 leechset - Leech settings
 setthumb - Set Thumbnail
