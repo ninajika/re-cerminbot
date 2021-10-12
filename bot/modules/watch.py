@@ -50,7 +50,7 @@ def _watch(bot: Bot, update, isZip=False, isLeech=False):
         name = ""
 
     pswd = ""
-    listener = MirrorListener(bot, update, pswd, isTar, isZip=isZip, isLeech=isLeech)
+    listener = MirrorListener(bot, update, pswd, isZip=isZip, isLeech=isLeech)
     ydl = YoutubeDLHelper(listener)
     threading.Thread(
         target=ydl.add_download,
