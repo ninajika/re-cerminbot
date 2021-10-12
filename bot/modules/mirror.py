@@ -26,7 +26,6 @@ from bot import (
     INDEX_URL,
     SHORTENER,
     SHORTENER_API,
-    TAR_UNTAR_LIMIT,
     TG_SPLIT_SIZE,
     VIEW_LINK,
     ZIP_UNZIP_LIMIT,
@@ -74,14 +73,12 @@ class MirrorListener(listeners.MirrorListeners):
         bot,
         update,
         pswd,
-        isTar=False,
         extract=False,
         isZip=False,
         isQbit=False,
         isLeech=False,
     ):
         super().__init__(bot, update)
-        self.isTar = isTar
         self.extract = extract
         self.isZip = isZip
         self.isQbit = isQbit
@@ -116,10 +113,6 @@ class MirrorListener(listeners.MirrorListeners):
             ):  # when pyrogram's media.file_name is of NoneType
                 name = os.listdir(f"{DOWNLOAD_DIR}{self.uid}")[0]
             m_path = f"{DOWNLOAD_DIR}{self.uid}/{name}"
-        if self.isTar:
-            with download_dict_lock:
-                download_dict[self.uid] = TarStatus(name, m_path, size)
-                path = fs_utils.tar(m_path)
         if self.isZip:
             try:
                 with download_dict_lock:
@@ -462,7 +455,7 @@ def _mirror(
                 link = file.get_file().download(custom_path=file_name)
             elif file.mime_type != "application/x-bittorrent":
                 listener = MirrorListener(
-                    bot, update, pswd, isTar, extract, isZip, isLeech=isLeech
+                    bot, update, pswd, extract, isZip, isLeech=isLeech
                 )
                 tg_downloader = TelegramDownloadHelper(listener)
                 ms = update.message
@@ -525,11 +518,10 @@ def _mirror(
         if res != "":
             sendMessage(res, bot, update)
             return
-        if ZIP_UNZIP_LIMIT is not None:
-            if size > ZIP_UNZIP_LIMIT * 1024 ** 3:
-                msg = f"Gagal, batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
-                sendMessage(msg, bot, update)
-                return
+        if ZIP_UNZIP_LIMIT is not None and size > ZIP_UNZIP_LIMIT * 1024 ** 3:
+            msg = f"Gagal, batas Zip/Unzip adalah {ZIP_UNZIP_LIMIT}.\nUkuran File/Folder Anda adalah {get_readable_file_size(size)}. "
+            sendMessage(msg, bot, update)
+            return
         LOGGER.info(f"Download Name : {name}")
         drive = gdriveTools.GoogleDriveHelper(name, listener)
         gid = ''.join(
