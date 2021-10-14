@@ -145,7 +145,7 @@ class MirrorListener(listeners.MirrorListeners):
                         for filee in files:
                             if re.search(r'\.part0*1.rar$', filee) or re.search(r'\.7z.0*1$', filee) \
                                or (filee.endswith(".rar") and not re.search(r'\.part\d+.rar$', filee)) \
-                               or filee.endswith(".zip"):
+                               or filee.endswith(".zip") or re.search(r'\.zip.0*1$', filee):
                                 m_path = os.path.join(dirpath, filee)
                                 if pswd is not None:
                                     result = subprocess.run(
@@ -159,8 +159,9 @@ class MirrorListener(listeners.MirrorListeners):
                                     LOGGER.warning("Unable to extract archive!")
                                 break
                         for filee in files:
-                            if filee.endswith(".rar") or re.search(r'\.r\d+$', filee) or filee.endswith(".zip") \
-                               or re.search(r'\.7z.\d+$', filee) or re.search(r'\.z\d+$', filee):
+                            if filee.endswith(".rar") or re.search(r'\.r\d+$', filee) \
+                               or re.search(r'\.7z.\d+$', filee) or re.search(r'\.z\d+$', filee) \
+                               or re.search(r'\.zip.\d+$', filee) or filee.endswith(".zip"):
                                 del_path = os.path.join(dirpath, filee)
                                 os.remove(del_path)
                     path = f"{DOWNLOAD_DIR}{self.uid}/{name}"
