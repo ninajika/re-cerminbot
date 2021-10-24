@@ -122,6 +122,8 @@ class MirrorListener(listeners.MirrorListeners):
                 LOGGER.info(f"Zip: orig_path: {m_path}, zip_path: {path}")
                 if pswd is not None:
                     subprocess.run(["7z", "a", "-mx=0", f"-p{pswd}", path, m_path])
+                else:
+                    subprocess.run(["7z", "a", "-mx=0", path, m_path])
             except FileNotFoundError:
                 LOGGER.info("File to archive not found!")
                 self.onUploadError("Internal error occurred!!")
@@ -425,12 +427,9 @@ def _mirror(
         link = link.split("://", maxsplit=1)
         link = f'{link[0]}://{ussr}:{pssw}@{link[1]}'
     pswd = mesg[0].split('pswd: ')
-    if len(pswd) > 1:
-        pswd = pswd[1]
-    else:
-        pswd = None
-        link = re.split(r"pswd:|\|", link)[0]
-        link = link.strip()
+    pswd = pswd[1] if len(pswd) > 1 else None
+    link = re.split(r"pswd:|\|", link)[0]
+    link = link.strip()
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         file = None
