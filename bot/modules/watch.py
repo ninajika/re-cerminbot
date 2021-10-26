@@ -71,7 +71,7 @@ def leechWatch(update, context):
 
 
 def leechWatchZip(update, context):
-    _watch(context.bot, update, True, True, True)
+    _watch(context.bot, update, True, True)
 
 
 watch_handler = CommandHandler(BotCommands.WatchCommand, watch,
