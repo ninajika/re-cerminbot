@@ -102,9 +102,11 @@ def direct_link_generator(link: str):  # sourcery no-metrics
     elif "dropbox.com" in link:
         return dropbox2(link)
     elif "krakenfiles.com" in link:
-	    return kraken(link)
+	return kraken(link)
     elif "androiddatahost.com" in link:
         return androidatahost(link)
+    elif "sfile.mobi" in link:
+        return sfile(link)
     else:
         raise DirectDownloadLinkException(
             f"No Direct link function found for {link}")
@@ -164,6 +166,14 @@ def androidatahost(url: str) -> str:
     fin = url3.find("div", {'download2'})
     return fin.find('a')["href"]
 
+def sfile(url: str) -> str:
+    """ Sfile.mobi direct generator
+        Based on https://github.com/nekaru-storage/re-cerminbot """
+        headers = {
+                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; SM-G532G Build/MMB29T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.83 Mobile Safari/537.36'
+                }
+        url3 = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
+        return url3.find('a', 'w3-button w3-blue')['href']
 
 def yandex_disk(url: str) -> str:
     """ Yandex.Disk direct links generator
