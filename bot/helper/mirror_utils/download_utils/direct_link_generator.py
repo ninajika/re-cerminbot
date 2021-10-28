@@ -20,6 +20,7 @@ import lk21
 import requests
 from bs4 import BeautifulSoup
 from js2py import EvalJs
+from pykraken.kraken import Kraken
 from lk21.extractors.bypasser import Bypass
 from bot import LOGGER, UPTOBOX_TOKEN
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
@@ -100,6 +101,10 @@ def direct_link_generator(link: str):  # sourcery no-metrics
         return dropbox1(link)
     elif "dropbox.com" in link:
         return dropbox2(link)
+    elif "krakenfiles.com" in link:
+	    return kraken(link)
+    elif "androiddatahost.com" in link:
+        return androidatahost(link)
     else:
         raise DirectDownloadLinkException(
             f"No Direct link function found for {link}")
@@ -139,6 +144,25 @@ def _extracted_from_zippy_share_8(link):
     evaljs.execute(js_content)
     js_content = getattr(evaljs, "x")
     return base_url + js_content
+
+def kraken(url: str) -> str:
+    """ Krakenfiles direct link generator
+    Based on https://github.com/tha23rd/py-kraken
+             https://github.com/nekaru-storage/re-cerminbot
+    """
+    k = Kraken()
+    return k.get_download_link(url)
+
+def androidatahost(url: str) -> str:
+    """ Androiddatahost direct generator 
+        Based on https://github.com/nekaru-storage/re-cerminbot """
+    try:
+        link = re.findall(r"\bhttps?://androiddatahost\.com\S+", url)[0]
+    except IndexError:
+        return "`No Androiddatahost links found`\n"
+    url3 = BeautifulSoup(requests.get(link).content, "html.parser")
+    fin = url3.find("div", {'download2'})
+    return fin.find('a')["href"]
 
 
 def yandex_disk(url: str) -> str:

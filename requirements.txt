@@ -16,6 +16,7 @@ gunicorn
 https://github.com/trp07/messages/archive/refs/heads/master.zip
 psutil
 Pillow
+py-kraken
 psycopg2-binary
 pybase64
 urllib3
