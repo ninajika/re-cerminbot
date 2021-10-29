@@ -102,7 +102,7 @@ def direct_link_generator(link: str):  # sourcery no-metrics
     elif "dropbox.com" in link:
         return dropbox2(link)
     elif "krakenfiles.com" in link:
-	return kraken(link)
+        return kraken(link)
     elif "androiddatahost.com" in link:
         return androidatahost(link)
     elif "sfile.mobi" in link:
@@ -147,6 +147,7 @@ def _extracted_from_zippy_share_8(link):
     js_content = getattr(evaljs, "x")
     return base_url + js_content
 
+
 def kraken(url: str) -> str:
     """ Krakenfiles direct link generator
     Based on https://github.com/tha23rd/py-kraken
@@ -155,8 +156,9 @@ def kraken(url: str) -> str:
     k = Kraken()
     return k.get_download_link(url)
 
+
 def androidatahost(url: str) -> str:
-    """ Androiddatahost direct generator 
+    """ Androiddatahost direct generator
         Based on https://github.com/nekaru-storage/re-cerminbot """
     try:
         link = re.findall(r"\bhttps?://androiddatahost\.com\S+", url)[0]
@@ -166,14 +168,16 @@ def androidatahost(url: str) -> str:
     fin = url3.find("div", {'download2'})
     return fin.find('a')["href"]
 
+
 def sfile(url: str) -> str:
     """ Sfile.mobi direct generator
         Based on https://github.com/nekaru-storage/re-cerminbot """
-        headers = {
-                'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; SM-G532G Build/MMB29T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.83 Mobile Safari/537.36'
-                }
-        url3 = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
-        return url3.find('a', 'w3-button w3-blue')['href']
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0.1; SM-G532G Build/MMB29T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.83 Mobile Safari/537.36'
+    }
+    url3 = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
+    return url3.find('a', 'w3-button w3-blue')['href']
+
 
 def yandex_disk(url: str) -> str:
     """ Yandex.Disk direct links generator
@@ -398,7 +402,7 @@ def racaty(url: str) -> str:
         raise DirectDownloadLinkException(
             "Tidak ada tautan racaty yang ditemukan\n")
     scraper = cloudscraper.create_scraper()
-    r = scraper.get(url)
+    r = scraper.get(link)
     soup = BeautifulSoup(r.text, "lxml")
     op = soup.find("input", {"name": "op"})["value"]
     ids = soup.find("input", {"name": "id"})["value"]
