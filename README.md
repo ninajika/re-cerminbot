@@ -438,6 +438,15 @@ For Index Link with only password without username, even http auth will not work
 ```
 machine example.workers.dev password index_password
 ```
+
+**NOTE**: Since this bot using yt-dlp. 
+```
+So .netrc maybe not working at all but if you using netrc you can notice some warning
+say about using cookies option maybe since youtube have been slightly changed
+So maybe in future update i will add cookies.txt option
+and add support cookies.txt option
+```
+
 Where host is the name of extractor (eg. Youtube, Twitch). Multiple accounts of different hosts can be added each separated by a new line.
 
 # Credits
