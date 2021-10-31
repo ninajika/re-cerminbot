@@ -432,6 +432,20 @@ try:
 except KeyError:
     pass
 try:
+    COOKIES_FILE = getConfig('COOKIES_FILE')
+    if len(COOKIES_FILE) == 0:
+        COOKIES_FILE = None
+    else:
+        res = requests.get(COOKIES_FILE)
+        if res.status_code == 200:
+            with open('cookies.txt', 'wb+') as f:
+                f.write(res.content)
+                f.close()
+        else:
+            raise KeyError
+except KeyError:
+    COOKIES_FILE = None
+try:
     ACCOUNTS_ZIP_URL = getConfig('ACCOUNTS_ZIP_URL')
     if len(ACCOUNTS_ZIP_URL) == 0:
         ACCOUNTS_ZIP_URL = None
