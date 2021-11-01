@@ -45,10 +45,8 @@ class YoutubeDLHelper(DownloadHelper):
             'progress_hooks': [self.__onDownloadProgress],
             'logger': MyLogger(self),
             'usenetrc': True,
-            'cookiefile': 'cookies.txt'
+            'cookiefile': 'cookies.txt',
             'geo_bypass': True,
-            'geo_bypass_country': 'ID',
-            'geo_bypass_ip_block': '10.100.0.0/14',
         }
         self.__download_speed = 0
         self.downloaded_bytes = 0
