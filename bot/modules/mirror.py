@@ -504,7 +504,7 @@ def _mirror(
                 update,
             )
             return
-        res, size, name, files = gdriveTools.GoogleDriveHelper().clonehelper(link)
+        res, size, name, files = gdriveTools.GoogleDriveHelper().helper(link)
         if res != "":
             sendMessage(res, bot, update)
             return
