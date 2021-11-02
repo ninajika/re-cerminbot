@@ -2,6 +2,8 @@
 
 Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 
+## This repo has been discontinue
+
 # re-mirrorbot
 ![GitHub forks](https://img.shields.io/github/forks/Ncode2014/re-mirrorbot?color=green&style=flat)
 ![GitHub issues](https://img.shields.io/github/issues/Ncode2014/re-mirrorbot)
@@ -10,7 +12,7 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 ![GitHub repo size](https://img.shields.io/github/repo-size/Ncode2014/re-mirrorbot?color=red)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Ncode2014/re-mirrorbot)
 ![GitHub](https://img.shields.io/github/license/Ncode2014/re-cerminbot)
-![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
+![Maintenance](https://img.shields.io/badge/Maintained%3F-no-green.svg)
 ![Docker Pulls](https://img.shields.io/docker/pulls/narima/megaria?label=Docker%20Pull)
 
 **re-cerminbot** is a _multipurpose_ Telegram Bot written in Python for mirroring files on the Internet to our beloved Google Drive, Based on [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and Using Update from repo [mirror-leach-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
