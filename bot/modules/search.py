@@ -1,159 +1,194 @@
-import math
+import itertools
+import time
+from urllib.parse import quote
 
-import qbittorrentapi as qba
+import requests
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler, CommandHandler
 
-from bot import LOGGER, dispatcher, get_client, search_dict, search_dict_lock
-from bot.helper.ext_utils.bot_utils import get_readable_file_size, new_thread
+from bot import LOGGER, SEARCH_API_LINK, dispatcher
+from bot.helper.ext_utils.telegraph_helper import telegraph
 from bot.helper.telegram_helper import button_build
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import editMessage, sendMessage
+from bot.helper.telegram_helper.message_utils import (
+    editMessage,
+    sendMarkup,
+    sendMessage,
+)
+
+SITES = {
+    "1337x": "1337x",
+    "nyaasi": "NyaaSi",
+    "yts": "YTS",
+    "piratebay": "PirateBay",
+    "torlock": "Torlock",
+    "eztv": "EzTvio",
+    "tgx": "TorrentGalaxy",
+    "rarbg": "Rarbg",
+    "ettv": "Ettv",
+    "all": "All",
+}
+
+SEARCH_LIMIT = 250
 
 
-@new_thread
-def search(update, context):
+def torser(update, context):
+    user_id = update.message.from_user.id
+    if SEARCH_API_LINK is None:
+        return sendMessage(
+            "No Torrent Search Api Link. Check readme variables", context.bot, update
+        )
     try:
         key = update.message.text.split(" ", maxsplit=1)[1]
-        client = get_client()
-        # client.search_update_plugins()
-        # plug = client.search_plugins()
-        # LOGGER.info(plug)
-        search = client.search_start(pattern=str(key), plugins="all", category="all")
-        srchmsg = sendMessage("Searching...", context.bot, update)
-        user_id = update.message.from_user.id
-        search_id = search.id
-        LOGGER.info(f"qBittorrent Search: {key}")
-        while True:
-            result_status = client.search_status(search_id=search_id)
-            status = result_status[0].status
-            if status != "Running":
-                break
-        dict_search_results = client.search_results(search_id=search_id)
-        search_results = dict_search_results.results
-        total_results = dict_search_results.total
-        if total_results != 0:
-            total_pages = math.ceil(total_results / 3)
-            msg = getResult(search_results)
-            buttons = button_build.ButtonMaker()
-            if total_results > 3:
-                msg += (
-                    f"<b>Pages: </b>1/{total_pages} | <b>Results: </b>{total_results}"
-                )
-                buttons.sbutton("Previous", f"srchprev {user_id} {search_id}")
-                buttons.sbutton("Next", f"srchnext {user_id} {search_id}")
-            buttons.sbutton("Close", f"closesrch {user_id} {search_id}")
-            button = InlineKeyboardMarkup(buttons.build_menu(2))
-            editMessage(msg, srchmsg, button)
-            with search_dict_lock:
-                search_dict[search_id] = (
-                    client,
-                    search_results,
-                    total_results,
-                    total_pages,
-                    1,
-                    0,
-                )
-        else:
-            editMessage(f"No result found for <i>{key}</i>", srchmsg)
     except IndexError:
-        sendMessage("Send a search key along with command", context.bot, update)
-    except Exception as e:
-        LOGGER.error(str(e))
+        return sendMessage("Send a search key along with command", context.bot, update)
+        buttons = button_build.ButtonMaker()
+        for data, name in SITES.items():
+            buttons.sbutton(name, f"torser {user_id} {data}")
+        buttons.sbutton("Cancel", f"torser {user_id} cancel")
+        button = InlineKeyboardMarkup(buttons.build_menu(2))
+        sendMarkup("Choose site to search.", context.bot, update, button)
 
 
-def searchPages(update, context):
+def torserbut(update, context):
     query = update.callback_query
     user_id = query.from_user.id
+    message = query.message
+    key = message.reply_to_message.text.split(" ", maxsplit=1)[1]
     data = query.data
     data = data.split(" ")
-    search_id = int(data[2])
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
-        return
-    with search_dict_lock:
-        try:
-            (
-                client,
-                search_results,
-                total_results,
-                total_pages,
-                pageNo,
-                start,
-            ) = search_dict[search_id]
-        except:
-            query.answer(text="Old Result", show_alert=True)
-            query.message.delete()
-            return
-    if data[0] == "srchnext":
-        if pageNo == total_pages:
-            start = 0
-            pageNo = 1
-        else:
-            start += 3
-            pageNo += 1
-    elif data[0] == "srchprev":
-        if pageNo == 1:
-            pageNo = total_pages
-            start = 3 * (total_pages - 1)
-        else:
-            pageNo -= 1
-            start -= 3
-    elif data[0] == "closesrch":
-        client.search_delete(search_id)
-        client.auth_log_out()
-        with search_dict_lock:
-            try:
-                del search_dict[search_id]
-            except:
-                pass
-        query.message.delete()
-        return
-    with search_dict_lock:
-        search_dict[search_id] = (
-            client,
-            search_results,
-            total_results,
-            total_pages,
-            pageNo,
-            start,
+    elif data[2] != "cancel":
+        query.answer()
+        site = data[2]
+        editMessage(
+            f"<b>Searching for <i>{key}</i> Torrent Site:- <i>{SITES.get(site)}</i></b>",
+            message,
         )
-    msg = getResult(search_results, start=start)
-    msg += f"<b>Pages: </b>{pageNo}/{total_pages} | <b>Results: </b>{total_results}"
-    buttons = button_build.ButtonMaker()
-    buttons.sbutton("Previous", f"srchprev {user_id} {search_id}")
-    buttons.sbutton("Next", f"srchnext {user_id} {search_id}")
-    buttons.sbutton("Close", f"closesrch {user_id} {search_id}")
-    button = InlineKeyboardMarkup(buttons.build_menu(2))
-    query.answer()
-    editMessage(msg, query.message, button)
+        search(key, site, message)
+    else:
+        query.answer()
+        editMessage("Search has been canceled!", message)
 
 
-def getResult(search_results, start=0):
-    msg = ""
-    for index, result in enumerate(search_results[start:], start=1):
-        msg += f"<a href='{result.descrLink}'>{result.fileName}</a>\n"
-        msg += f"<b>Size: </b>{get_readable_file_size(result.fileSize)}\n"
-        msg += f"<b>Seeders: </b>{result.nbSeeders} | <b>Leechers: </b>{result.nbLeechers}\n"
-        msg += f"<b>Link: </b><code>{result.fileUrl}</code>\n\n"
-        if index == 3:
+def search(key, site, message):
+    LOGGER.info(f"Searching: {key} from {site}")
+    api = f"{SEARCH_API_LINK}/api/{site}/{key}"
+    try:
+        resp = requests.get(api)
+        search_results = resp.json()
+        if site == "all":
+            search_results = list(itertools.chain.from_iterable(search_results))
+        if isinstance(search_results, list):
+            link = getResult(search_results, key, message)
+            buttons = button_build.ButtonMaker()
+            buttons.buildbutton("🔎 VIEW", link)
+            msg = f"<b>Found {SEARCH_LIMIT if len(search_results) > SEARCH_LIMIT else len(search_results)}</b>"
+            msg += f" <b>result for <i>{key}</i> Torrent Site:- <i>{SITES.get(site)}</i></b>"
+            button = InlineKeyboardMarkup(buttons.build_menu(1))
+            editMessage(msg, message, button)
+        else:
+            editMessage(
+                f"No result found for <i>{key}</i> Torrent Site:- <i>{SITES.get(site)}</i>",
+                message,
+            )
+    except Exception as e:
+        editMessage(str(e), message)
+
+
+def getResult(search_results, key, message):
+    telegraph_content = []
+    path = []
+    msg = f"<h4>Search Result For {key}</h4><br><br>"
+    for index, result in enumerate(search_results, start=1):
+        try:
+            msg += f"<code><a href='{result['Url']}'>{result['Name']}</a></code><br>"
+            if "Files" in result.keys():
+                for subres in result["Files"]:
+                    msg += f"<b>Quality: </b>{subres['Quality']} | <b>Size: </b>{subres['Size']}<br>"
+                    try:
+                        msg += f"<b>Share link to</b> <a href='http://t.me/share/url?url={subres['Torrent']}'>Telegram</a><br>"
+                        msg += f"<b>Link: </b><code>{subres['Torrent']}</code><br>"
+                    except KeyError:
+                        msg += f"<b>Share Magnet to</b> <a href='http://t.me/share/url?url={subres['Magnet']}'>Telegram</a><br>"
+                        msg += (
+                            f"<b>Magnet: </b><code>{quote(subres['Magnet'])}</code><br>"
+                        )
+            else:
+                msg += f"<b>Size: </b>{result['Size']}<br>"
+                msg += f"<b>Seeders: </b>{result['Seeders']} | <b>Leechers: </b>{result['Leechers']}<br>"
+        except KeyError:
+            pass
+        try:
+            msg += f"<b>Share Magnet to</b> <a href='http://t.me/share/url?url={quote(result['Magnet'])}'>Telegram</a><br>"
+            msg += f"<b>Magnet: </b><code>{result['Magnet']}</code><br><br>"
+        except KeyError:
+            msg += "<br>"
+        if len(msg.encode("utf-8")) > 40000:
+            telegraph_content.append(msg)
+            msg = ""
+
+        if index == SEARCH_LIMIT:
             break
-    return msg
+
+    if msg != "":
+        telegraph_content.append(msg)
+
+    editMessage(
+        f"<b>Creating</b> {len(telegraph_content)} <b>Telegraph pages.</b>", message
+    )
+    for content in telegraph_content:
+        path.append(
+            telegraph.create_page(
+                title="Mirror-leech-bot Torrent Search", content=content
+            )["path"]
+        )
+    time.sleep(0.5)
+    if len(path) > 1:
+        editMessage(
+            f"<b>Editing</b> {len(telegraph_content)} <b>Telegraph pages.</b>", message
+        )
+        edit_telegraph(path, telegraph_content)
+    return f"https://telegra.ph/{path[0]}"
 
 
-search_handler = CommandHandler(
+def edit_telegraph(path, telegraph_content):
+    nxt_page = 1
+    prev_page = 0
+    num_of_path = len(path)
+    for content in telegraph_content:
+        if nxt_page == 1:
+            content += f'<b><a href="https://telegra.ph/{path[nxt_page]}">Next</a></b>'
+            nxt_page += 1
+        else:
+            if prev_page <= num_of_path:
+                content += (
+                    f'<b><a href="https://telegra.ph/{path[prev_page]}">Prev</a></b>'
+                )
+                prev_page += 1
+            if nxt_page < num_of_path:
+                content += (
+                    f'<b> | <a href="https://telegra.ph/{path[nxt_page]}">Next</a></b>'
+                )
+                nxt_page += 1
+        telegraph.edit_page(
+            path=path[prev_page],
+            title="Mirror-leech-bot Torrent Search",
+            content=content,
+        )
+        time.sleep(0.5)
+    return
+
+
+torser_handler = CommandHandler(
     BotCommands.SearchCommand,
-    search,
+    torser,
     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,
     run_async=True,
 )
-srchnext_handler = CallbackQueryHandler(searchPages, pattern="srchnext", run_async=True)
-srchprevious_handler = CallbackQueryHandler(
-    searchPages, pattern="srchprev", run_async=True
-)
-delsrch_handler = CallbackQueryHandler(searchPages, pattern="closesrch", run_async=True)
-dispatcher.add_handler(search_handler)
-dispatcher.add_handler(srchnext_handler)
-dispatcher.add_handler(srchprevious_handler)
-dispatcher.add_handler(delsrch_handler)
+torserbut_handler = CallbackQueryHandler(torserbut, pattern="torser", run_async=True)
+
+dispatcher.add_handler(torser_handler)
+dispatcher.add_handler(torserbut_handler)

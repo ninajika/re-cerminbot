@@ -4,9 +4,10 @@
 
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+
 from bot import app
-from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper import post_to_telegraph, runcmd, safe_filename
+from bot.helper.telegram_helper.bot_commands import BotCommands
 
 
 @app.on_message(filters.command(BotCommands.MediaInfoCommand))
@@ -49,10 +50,8 @@ async def mediainfo(client, message):
 <h2>DETAILS</h2>
 <pre>{out or 'Not Supported'}</pre>
 """
-    title = 're-mirrorbot Mediainfo'
+    title = "re-mirrorbot Mediainfo"
     text_ = media_type.split(".")[-1].upper()
     link = post_to_telegraph(title, body_text)
-    markup = InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text=text_, url=link)]]
-    )
+    markup = InlineKeyboardMarkup([[InlineKeyboardButton(text=text_, url=link)]])
     await process.edit_text("ℹ️ <b>INFO MEDIA</b>", reply_markup=markup)

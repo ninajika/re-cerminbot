@@ -2,9 +2,14 @@
 # (c) https://github.com/SlamDevs/slam-mirrorbot
 # All rights reserved
 
-from .status import Status
-from bot.helper.ext_utils.bot_utils import MirrorStatus, get_readable_file_size, get_readable_time
 from bot import DOWNLOAD_DIR
+from bot.helper.ext_utils.bot_utils import (
+    MirrorStatus,
+    get_readable_file_size,
+    get_readable_time,
+)
+
+from .status import Status
 
 
 class DownloadStatus(Status):
@@ -43,7 +48,7 @@ class DownloadStatus(Status):
             return 0
 
     def progress(self):
-        return f'{round(self.progress_raw(), 2)}%'
+        return f"{round(self.progress_raw(), 2)}%"
 
     def speed_raw(self):
         """
@@ -52,15 +57,14 @@ class DownloadStatus(Status):
         return self.dobj.dspeed()
 
     def speed(self):
-        return f'{get_readable_file_size(self.speed_raw())}/s'
+        return f"{get_readable_file_size(self.speed_raw())}/s"
 
     def eta(self):
         try:
-            seconds = (self.__dsize -
-                       self.dobj.downloaded_bytes) / self.speed_raw()
-            return f'{get_readable_time(seconds)}'
+            seconds = (self.__dsize - self.dobj.downloaded_bytes) / self.speed_raw()
+            return f"{get_readable_time(seconds)}"
         except ZeroDivisionError:
-            return '-'
+            return "-"
 
     def download(self):
         return self.dobj

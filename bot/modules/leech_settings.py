@@ -53,7 +53,7 @@ def getleechinfo(from_user):
     button = InlineKeyboardMarkup(buttons.build_menu(1))
 
     text = (
-        f"<u>Leech Setting Of <a href='tg://user?id={user_id}'>{name}</a></u>\n"
+        f"<u>Leech Settings for <a href='tg://user?id={user_id}'>{name}</a></u>\n"
         f"Leech Type <b>{ltype}</b>\n"
         f"Custom Thumbnail <b>{thumbmsg}</b>"
     )
@@ -82,29 +82,17 @@ def setLeechType(update, context):
     if user_id != int(data[1]):
         query.answer(text="Not Yours!", show_alert=True)
     elif data[0] == "doc":
-        if user_id in AS_DOC_USERS or user_id not in AS_MEDIA_USERS and AS_DOCUMENT:
-            query.answer(text="Already As Document!", show_alert=True)
-        elif user_id in AS_MEDIA_USERS:
+        if user_id in AS_MEDIA_USERS:
             AS_MEDIA_USERS.remove(user_id)
-            AS_DOC_USERS.add(user_id)
-            query.answer(text="Your File Will Deliver As Document!", show_alert=True)
-            editLeechType(message, query)
-        else:
-            AS_DOC_USERS.add(user_id)
-            query.answer(text="Your File Will Deliver As Document!", show_alert=True)
-            editLeechType(message, query)
+        AS_DOC_USERS.add(user_id)
+        query.answer(text="Your File Will Deliver As Document!", show_alert=True)
+        editLeechType(message, query)
     elif data[0] == "med":
         if user_id in AS_DOC_USERS:
             AS_DOC_USERS.remove(user_id)
-            AS_MEDIA_USERS.add(user_id)
-            query.answer(text="Your File Will Deliver As Media!", show_alert=True)
-            editLeechType(message, query)
-        elif user_id in AS_MEDIA_USERS or not AS_DOCUMENT:
-            query.answer(text="Already As Media!", show_alert=True)
-        else:
-            AS_MEDIA_USERS.add(user_id)
-            query.answer(text="Your File Will Deliver As Media!", show_alert=True)
-            editLeechType(message, query)
+        AS_MEDIA_USERS.add(user_id)
+        query.answer(text="Your File Will Deliver As Media!", show_alert=True)
+        editLeechType(message, query)
     elif data[0] == "thumb":
         path = f"Thumbnails/{user_id}.jpg"
         if os.path.lexists(path):
@@ -112,7 +100,7 @@ def setLeechType(update, context):
             query.answer(text="Thumbnail Removed!", show_alert=True)
             editLeechType(message, query)
         else:
-            query.answer(text="No Thumbnail To Delete!", show_alert=True)
+            query.answer(text="Old Settings", show_alert=True)
     elif data[0] == "closeset":
         try:
             query.message.delete()

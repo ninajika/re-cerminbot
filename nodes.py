@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # (c) YashDK [yash-dk@github]
 
-from anytree import NodeMixin, RenderTree, PreOrderIter
-import qbittorrentapi as qba
+from anytree import NodeMixin, RenderTree
 
 SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"]
 
@@ -82,7 +81,8 @@ def make_tree(res):
                     )
                 else:
                     previous_node = current_node
-            # at this point the previous_node will contain the deepest folder in it so add the file to it
+            # at this point the previous_node will contain the deepest folder
+            # in it so add the file to it
             TorNode(
                 folders[-1],
                 is_file=True,

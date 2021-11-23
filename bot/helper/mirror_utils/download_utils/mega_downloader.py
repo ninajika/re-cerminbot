@@ -23,8 +23,11 @@ from bot.helper.ext_utils.bot_utils import (
 )
 from bot.helper.mirror_utils.status_utils.mega_download_status import MegaDownloadStatus
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
-from bot.helper.telegram_helper.message_utils import *
-
+from bot.helper.telegram_helper.message_utils import (
+    sendMarkup,
+    sendMessage,
+    sendStatusMessage,
+)
 
 
 class MegaAppListener(MegaListener):
@@ -40,7 +43,7 @@ class MegaAppListener(MegaListener):
         self.__bytes_transferred = 0
         self.is_cancelled = False
         self.__speed = 0
-        self.__name = ''
+        self.__name = ""
         self.__size = 0
         self.error = None
         self.gid = ""
@@ -198,30 +201,28 @@ class MegaDownloadHelper:
                 gd = GoogleDriveHelper()
                 smsg, button = gd.drive_list(mname, True)
                 if smsg:
-                    msg1 = "File/folder sudah tersedia di drive.\nBerikut adalah hasil pencarian:"
+                    msg1 = "File/Folder is already available in Drive.\nHere are the search results:"
                     sendMarkup(msg1, listener.bot, listener.update, button)
                     executor.continue_event.set()
                     return
         limit = None
         if ZIP_UNZIP_LIMIT is not None and (listener.isZip or listener.extract):
-            msg3 = (
-                msg3
-            ) = f"Gagal, batas zip/Unzip adalah {ZIP_UNZIP_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}."
+            msg3 = f"Failed, Zip/Unzip limit is {ZIP_UNZIP_LIMIT}GB.\nYour File/Folder size is {get_readable_file_size(api.getSize(node))}."
             limit = ZIP_UNZIP_LIMIT
         elif MEGA_LIMIT is not None:
-            msg3 = f"Gagal, batas Mega adalah {MEGA_LIMIT}GB.\nUkuran file/folder Anda {get_readable_file_size(api.getSize(node))}. "
+            msg3 = f"Failed, Mega limit is {MEGA_LIMIT}GB.\nYour File/Folder size is {get_readable_file_size(api.getSize(node))}."
             limit = MEGA_LIMIT
         if limit is not None:
-            LOGGER.info("Memeriksa Ukuran File/Folder...")
+            LOGGER.info("Checking File/Folder Size...")
             size = api.getSize(node)
-            if size > limit * 1024 ** 3:
+            if size > limit * 1024**3:
                 sendMessage(msg3, listener.bot, listener.update)
                 executor.continue_event.set()
                 return
         with download_dict_lock:
             download_dict[listener.uid] = MegaDownloadStatus(mega_listener, listener)
         os.makedirs(path)
-        gid = ''.join(
+        gid = "".join(
             random.SystemRandom().choices(string.ascii_letters + string.digits, k=8)
         )
         mega_listener.setValues(node.getName(), api.getSize(node), gid)

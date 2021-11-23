@@ -1,7 +1,8 @@
 # Implement By - @anasty17 (https://github.com/SlamDevs/slam-mirrorbot/commit/0bfba523f095ab1dccad431d72561e0e002e7a59)
 # (c) https://github.com/SlamDevs/slam-mirrorbot
-# (c) https://github.com/yash-dk/TorToolkit-Telegram for original implemented on TorToolkit-Telegram repo
 # All rights reserved
+
+from time import sleep
 
 from bot import DOWNLOAD_DIR, LOGGER
 from bot.helper.ext_utils.bot_utils import (
@@ -9,8 +10,8 @@ from bot.helper.ext_utils.bot_utils import (
     get_readable_file_size,
     get_readable_time,
 )
+
 from .status import Status
-from time import sleep
 
 
 class QbDownloadStatus(Status):
@@ -28,7 +29,7 @@ class QbDownloadStatus(Status):
         Calculates the progress of the mirror (upload or download)
         :return: returns progress in percentage
         """
-        return f'{round(self.torrent_info().progress*100,2)}%'
+        return f"{round(self.torrent_info().progress*100,2)}%"
 
     def size_raw(self):
         """
@@ -58,9 +59,9 @@ class QbDownloadStatus(Status):
     def status(self):
         download = self.torrent_info().state
         if download == "queuedDL":
-            status = MirrorStatus.STATUS_WAITING
+            return MirrorStatus.STATUS_WAITING
         elif download in ["metaDL", "checkingResumeData"]:
-            status = MirrorStatus.STATUS_DOWNLOADING + " (Metadata)"
+            return MirrorStatus.STATUS_DOWNLOADING + " (Metadata)"
         elif download == "pausedDL":
             return MirrorStatus.STATUS_PAUSE
         else:
@@ -82,5 +83,5 @@ class QbDownloadStatus(Status):
         LOGGER.info(f"Cancelling Download: {self.name()}")
         self.client.torrents_pause(torrent_hashes=self.__hash)
         sleep(0.3)
-        self.listener.onDownloadError('Download stopped by user!')
+        self.listener.onDownloadError("Download stopped by user!")
         self.client.torrents_delete(torrent_hashes=self.__hash)

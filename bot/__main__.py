@@ -2,41 +2,44 @@ import asyncio
 import os
 import shutil
 import signal
+import subprocess
 import time
-from datetime import datetime
 from sys import executable
 
 import psutil
-import pytz
 from pyrogram import idle
-from telegram import ParseMode, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup, ParseMode
 from telegram.ext import CommandHandler
-from telegraph import Telegraph
-from wserver import start_server_async
 
 from bot import (
-    OWNER_ID,
     AUTHORIZED_CHATS,
     IGNORE_PENDING_REQUESTS,
-    IMAGE_URL,
     IS_VPS,
+    LOGGER,
+    OWNER_ID,
     PORT,
-    nox,
     alive,
     app,
     bot,
     botStartTime,
     dispatcher,
+    nox,
     updater,
     web,
-    telegraph_token,
 )
 from bot.helper.ext_utils import fs_utils
 from bot.helper.telegram_helper import button_build
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import (
+    editMessage,
+    sendLogFile,
+    sendMarkup,
+    sendMessage,
+)
+from wserver import start_server_async
 
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
+from .helper.ext_utils.telegraph_helper import telegraph
 from .helper.telegram_helper.filters import CustomFilters
 from .modules import (
     authorize,
@@ -45,25 +48,19 @@ from .modules import (
     count,
     delete,
     eval,
+    leech_settings,
     list,
-    mediainfo,
     mirror,
     mirror_status,
-    reboot,
+    search,
     shell,
     speedtest,
-    search,
-    usage,
     watch,
-    leech_settings,
 )
-
-now = datetime.now(pytz.timezone("Asia/Jakarta"))
 
 
 def stats(update, context):
     currentTime = get_readable_time(time.time() - botStartTime)
-    current = now.strftime("%Y/%m/%d %I:%M:%S %p")
     total, used, free = shutil.disk_usage(".")
     total = get_readable_file_size(total)
     used = get_readable_file_size(used)
@@ -71,56 +68,56 @@ def stats(update, context):
     sent = get_readable_file_size(psutil.net_io_counters().bytes_sent)
     recv = get_readable_file_size(psutil.net_io_counters().bytes_recv)
     cpuUsage = psutil.cpu_percent(interval=0.5)
-    memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage("/").percent
+    p_core = psutil.cpu_count(logical=False)
+    t_core = psutil.cpu_count(logical=True)
+    swap = psutil.swap_memory()
+    swap_p = swap.percent
+    swap_t = get_readable_file_size(swap.total)
+    swap_u = get_readable_file_size(swap.used)
+    memory = psutil.virtual_memory()
+    mem_p = memory.percent
+    mem_t = get_readable_file_size(memory.total)
+    mem_a = get_readable_file_size(memory.available)
+    mem_u = get_readable_file_size(memory.used)
     stats = (
-        f"<b>Bot berjalan:</b> <code>{currentTime}</code>\n"
-        f"<b>Ruang Penyimpnan total:</b> <code>{total}</code>\n"
-        f"<b>Digunakan:</b> <code>{used}</code> "
-        f"<b>Bebas:</b> <code>{free}</code>\n\n"
-        f"<b>Upload:</b> <code>{sent}</code>\n"
-        f"<b>Download:</b> <code>{recv}</code>\n\n"
-        f"<b>CPU:</b> <code>{cpuUsage}%</code> "
-        f"<b>RAM:</b> <code>{memory}%</code> "
-        f"<b>HDD:</b> <code>{disk}%</code>"
+        f"<b>Bot Uptime:</b> {currentTime}\n\n"
+        f"<b>Total Disk Space:</b> {total}\n"
+        f"<b>Used:</b> {used} | <b>Free:</b> {free}\n\n"
+        f"<b>Upload:</b> {sent}\n"
+        f"<b>Download:</b> {recv}\n\n"
+        f"<b>CPU:</b> {cpuUsage}%\n"
+        f"<b>RAM:</b> {mem_p}%\n"
+        f"<b>DISK:</b> {disk}%\n\n"
+        f"<b>Physical Cores:</b> {p_core}\n"
+        f"<b>Total Cores:</b> {t_core}\n\n"
+        f"<b>SWAP:</b> {swap_t} | <b>Used:</b> {swap_p}%\n"
+        f"<b>Memory Total:</b> {mem_t}\n"
+        f"<b>Memory Free:</b> {mem_a}\n"
+        f"<b>Memory Used:</b> {mem_u}\n"
     )
-    update.effective_message.reply_photo(
-        IMAGE_URL, stats, parse_mode=ParseMode.HTML
-    )  # noqa: E501
+    sendMessage(stats, context.bot, update)
 
 
 def start(update, context):
     buttons = button_build.ButtonMaker()
-    buttons.buildbutton("Repo", "https://github.com/Ncode2014/re-cerminbot")
-    buttons.buildbutton("Group", "https://t.me/rumahmirorr")
+    buttons.buildbutton(
+        "Repo", "https://www.github.com/anasty17/mirror-leech-telegram-bot"
+    )
+    buttons.buildbutton("Group", "https://t.me/mirrorLeechGroup")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
-    if (
-            CustomFilters.authorized_user(update)
-            or CustomFilters.authorized_chat(update)
-            or update.message.chat.type == "private"
-    ):
+    if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         start_string = f"""
-Bot ini dapat mencerminkan semua tautan Anda ke Google Drive!
-Tipe /{BotCommands.HelpCommand} untuk mendapatkan daftar perintah yang tersedia
+This bot can mirror all your links to Google Drive!
+Type /{BotCommands.HelpCommand} to get a list of available commands
 """
         sendMarkup(start_string, context.bot, update, reply_markup)
     else:
-        sendMarkup(
-            "Ups! bukan pengguna Resmi.\nTolong deploy bot <b>re-cerminbot</b> buat kamu sendiri.",  # noqa: E501
-            context.bot,
-            update,
-            reply_markup,
-        )
+        sendMarkup("Not Authorized user", context.bot, update, reply_markup)
 
 
 def restart(update, context):
-    restart_message = sendMessage(
-        "Mulai ulang, Harap tunggu!", context.bot, update
-    )  # noqa: E501
-    # Save restart message object in order to reply to it after restarting
-    with open(".restartmsg", "w") as f:
-        f.truncate(0)
-        f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
+    restart_message = sendMessage("Restarting...", context.bot, update)
     fs_utils.clean_all()
     alive.kill()
     process = psutil.Process(web.pid)
@@ -128,12 +125,17 @@ def restart(update, context):
         proc.kill()
     process.kill()
     nox.kill()
+    subprocess.run(["python3", "update.py"])
+    # Save restart message object in order to reply to it after restarting
+    with open(".restartmsg", "w") as f:
+        f.truncate(0)
+        f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
     os.execl(executable, executable, "-m", "bot")
 
 
 def ping(update, context):
     start_time = int(round(time.time() * 1000))
-    reply = sendMessage("Mulai Ping", context.bot, update)
+    reply = sendMessage("Starting Ping", context.bot, update)
     end_time = int(round(time.time() * 1000))
     editMessage(f"{end_time - start_time} ms", reply)
 
@@ -142,145 +144,141 @@ def log(update, context):
     sendLogFile(context.bot, update)
 
 
-help_string_telegraph = f'''<br>
-<b>/{BotCommands.HelpCommand}</b>: Untuk mendapatkan pesan ini
+help_string_telegraph = f"""<br>
+<b>/{BotCommands.HelpCommand}</b>: To get this message
 <br><br>
-<b>/{BotCommands.MirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring tautan ke Google Drive.
+<b>/{BotCommands.MirrorCommand}</b> [download_url][magnet_link]: Start mirroring the link to Google Drive.
 <br><br>
-<b>/{BotCommands.ZipMirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring dan unggah yang diarsipkan (.zip) versi unduhan
+<b>/{BotCommands.ZipMirrorCommand}</b> [download_url][magnet_link]: Start mirroring and upload the archived (.zip) version of the download
 <br><br>
-<b>/{BotCommands.UnzipMirrorCommand}</b> [download_url][magnet_link]: Mulai mirroring dan file yang diunduh adalah arsip, mengekstraknya ke Google Drive
+<b>/{BotCommands.UnzipMirrorCommand}</b> [download_url][magnet_link]: Start mirroring and if downloaded file is any archive, extracts it to Google Drive
 <br><br>
-<b>/{BotCommands.QbMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent, Gunakan /{BotCommands.QbMirrorCommand} s untuk memilih file sebelum mengunduh
+<b>/{BotCommands.QbMirrorCommand}</b> [magnet_link]: Start Mirroring using qBittorrent, Use <b>/{BotCommands.QbMirrorCommand} s</b> to select files before downloading
 <br><br>
-<b>/{BotCommands.QbZipMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan unggah versi unduhan (.zip) yang diarsipkan
+<b>/{BotCommands.QbZipMirrorCommand}</b> [magnet_link]: Start mirroring using qBittorrent and upload the archived (.zip) version of the download
 <br><br>
-<b>/{BotCommands.QbUnzipMirrorCommand}</b> [magnet_link]: Mulai mirroring menggunakan qBittorrent dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Google Drive
+<b>/{BotCommands.QbUnzipMirrorCommand}</b> [magnet_link]: Start mirroring using qBittorrent and if downloaded file is any archive, extracts it to Google Drive
 <br><br>
-<b>/{BotCommands.LeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram, Gunakan <b>/{BotCommands.LeechCommand} s</b> untuk memilih file sebelum leeching
+<b>/{BotCommands.LeechCommand}</b> [download_url][magnet_link]: Start leeching to Telegram, Use <b>/{BotCommands.LeechCommand} s</b> to select files before leeching
 <br><br>
-<b>/{BotCommands.ZipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan unggah sebagai (.zip)
+<b>/{BotCommands.ZipLeechCommand}</b> [download_url][magnet_link]: Start leeching to Telegram and upload it as (.zip)
 <br><br>
-<b>/{BotCommands.UnzipLeechCommand}</b> [download_url][magnet_link]: Mulai leeching ke Telegram dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Telegram
+<b>/{BotCommands.UnzipLeechCommand}</b> [download_url][magnet_link]: Start leeching to Telegram and if downloaded file is any archive, extracts it to Telegram
 <br><br>
-<b>/{BotCommands.QbLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent, Gunakan <b>/{BotCommands.QbLeechCommand} s</b> untuk memilih file sebelum leeching
+<b>/{BotCommands.QbLeechCommand}</b> [magnet_link]: Start leeching to Telegram using qBittorrent, Use <b>/{BotCommands.QbLeechCommand} s</b> to select files before leeching
 <br><br>
-<b>/{BotCommands.QbZipLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan unggah sebagai (.zip)
+<b>/{BotCommands.QbZipLeechCommand}</b> [magnet_link]: Start leeching to Telegram using qBittorrent and upload it as (.zip)
 <br><br>
-<b>/{BotCommands.QbUnzipLeechCommand}</b> [magnet_link]: Mulai leeching ke Telegram Menggunakan Qbittorrent dan jika file yang diunduh adalah arsip apa pun, ekstrak ke Telegram
+<b>/{BotCommands.QbUnzipLeechCommand}</b> [magnet_link]: Start leeching to Telegram using qBittorrent and if downloaded file is any archive, extracts it to Telegram
 <br><br>
-<b>/{BotCommands.CloneCommand}</b> [drive_url]: Salin file/folder ke Google Drive
+<b>/{BotCommands.CloneCommand}</b> [drive_url]: Copy file/folder to Google Drive
 <br><br>
-<b>/{BotCommands.CountCommand}</b> [drive_url]: Hitung file/folder dari Google Drive Links
+<b>/{BotCommands.CountCommand}</b> [drive_url]: Count file/folder of Google Drive Links
 <br><br>
-<b>/{BotCommands.DeleteCommand}</b> [drive_url]: Hapus file dari Google Drive (Hanya Pemilik & Sudo)
+<b>/{BotCommands.DeleteCommand}</b> [drive_url]: Delete file from Google Drive (Only Owner & Sudo)
 <br><br>
-<b>/{BotCommands.WatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui yt-dlp/youtube-dl. Ketik /{BotCommands.WatchCommand} atau ketik /tolong
+<b>/{BotCommands.WatchCommand}</b> [youtube-dl supported link]: Mirror through youtube-dl. Click <b>/{BotCommands.WatchCommand}</b> for more help
 <br><br>
-<b>/{BotCommands.ZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Cermin melalui youtube-dl atau yt-dlp dan zip sebelum mengunggah
+<b>/{BotCommands.ZipWatchCommand}</b> [youtube-dl supported link]: Mirror through youtube-dl and zip before uploading
 <br><br>
-<b>/{BotCommands.LeechWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp
+<b>/{BotCommands.LeechWatchCommand}</b> [youtube-dl supported link]: Leech through youtube-dl
 <br><br>
-<b>/{BotCommands.LeechZipWatchCommand}</b> [youtube-dl/yt-dlp supported link]: Leech melalui youtube-dl/yt-dlp dan zip sebelum mengunggah
+<b>/{BotCommands.LeechZipWatchCommand}</b> [youtube-dl supported link]: Leech through youtube-dl and zip before uploading
 <br><br>
-<b>/{BotCommands.LeechSetCommand}</b> Pengaruran Leech
+<b>/{BotCommands.LeechSetCommand}</b>: Leech Settings
 <br><br>
-<b>/{BotCommands.SetThumbCommand}</b>: Balas foto untuk mengaturnya sebagai Thumbnail
+<b>/{BotCommands.SetThumbCommand}</b>: Reply photo to set it as Thumbnail
 <br><br>
-<b>/{BotCommands.CancelMirror}</b>: Balas pesan di mana unduhan dimulai dan unduhan itu akan dibatalkan
+<b>/{BotCommands.CancelMirror}</b>: Reply to the message by which the download was initiated and that download will be cancelled
 <br><br>
-<b>/{BotCommands.CancelAllCommand}</b>: Batalkan semua tugas yang sedang berjalan
+<b>/{BotCommands.CancelAllCommand}</b>: Cancel all running tasks
 <br><br>
-<b>/{BotCommands.ListCommand}</b> [search term]: Mencari istilah pencarian di Google Drive, Jika ditemukan balasan dengan tautan
+<b>/{BotCommands.ListCommand}</b> [query]: Search in Google Drive
 <br><br>
-<b>/{BotCommands.SearchCommand}</b> [query]: Cari torrent dengan plugin pencarian qbittorrent yang diinstal
+<b>/{BotCommands.SearchCommand}</b> [site](optional) [query]: Search for torrents with API
+<br>sites: <code>rarbg, 1337x, yts, etzv, tgx, torlock, piratebay, nyaasi, ettv</code><br><br>
+<b>/{BotCommands.StatusCommand}</b>: Shows a status of all the downloads
 <br><br>
-<b>/{BotCommands.StatusCommand}</b>: Menunjukkan status semua unduhan
-<br><br>
-<b>/{BotCommands.StatsCommand}</b>: Tampilkan Statistik Mesin The Bot diselenggarakan
-'''
-help = Telegraph(access_token=telegraph_token).create_page(
-    title='pencarian re-cerminbot',
-    author_name='re-cerminbot',
-    author_url='https://github.com/Ncode2014/re-cerminbot',
-    html_content=help_string_telegraph,
+<b>/{BotCommands.StatsCommand}</b>: Show Stats of the machine the bot is hosted on
+"""
+
+help = telegraph.create_page(
+    title="Mirror-Leech-Bot Help",
+    content=help_string_telegraph,
 )["path"]
 
-help_string = f'''
-/{BotCommands.PingCommand}: Periksa berapa lama waktu yang dibutuhkan untuk melakukan Ping Bot
+help_string = f"""
+/{BotCommands.PingCommand}: Check how long it takes to Ping the Bot
 
-/{BotCommands.AuthorizeCommand}: Otorisasi obrolan atau pengguna untuk menggunakan BOT (hanya dapat dipanggil oleh pemilik & sudo bot)
+/{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Can only be invoked by Owner & Sudo of the bot)
 
-/{BotCommands.UnAuthorizeCommand}: Tidak sah obrolan atau pengguna untuk menggunakan BOT (hanya dapat dipanggil oleh pemilik & sudo bot)
+/{BotCommands.UnAuthorizeCommand}: Unauthorize a chat or a user to use the bot (Can only be invoked by Owner & Sudo of the bot)
 
-/{BotCommands.AuthorizedUsersCommand}: Tampilkan pengguna yang berwenang (hanya pemilik & sudo)
+/{BotCommands.AuthorizedUsersCommand}: Show authorized users (Only Owner & Sudo)
 
-/{BotCommands.AddSudoCommand}: Tambahkan pengguna sudo (hanya pemilik)
+/{BotCommands.AddSudoCommand}: Add sudo user (Only Owner)
 
-/{BotCommands.RmSudoCommand}: Hapus pengguna sudo (hanya pemilik)
+/{BotCommands.RmSudoCommand}: Remove sudo users (Only Owner)
 
-/{BotCommands.RestartCommand}: Mulai ulang bot.
+/{BotCommands.RestartCommand}: Restart and update the bot
 
-/{BotCommands.LogCommand}: Dapatkan file log bot.Berguna untuk mendapatkan laporan kecelakaan
+/{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports
 
-/{BotCommands.UsageCommand}: Untuk melihat statistik Heroku Dyno (hanya pemilik & sudo)
+/{BotCommands.SpeedCommand}: Check Internet Speed of the Host
 
-/{BotCommands.SpeedCommand}: Periksa kecepatan internet tuan rumah
+/{BotCommands.ShellCommand}: Run commands in Shell (Only Owner)
 
-/{BotCommands.MediaInfoCommand}: Dapatkan info terperinci tentang Media Jawab (hanya untuk file telegram)
-'''
+/{BotCommands.ExecHelpCommand}: Get help for Executor module (Only Owner)
+"""
 
 
 def bot_help(update, context):
     button = button_build.ButtonMaker()
-    button.buildbutton("Perintah lainnya", f"https://telegra.ph/{help}")
+    button.buildbutton("Other Commands", f"https://telegra.ph/{help}")
     reply_markup = InlineKeyboardMarkup(button.build_menu(1))
     sendMarkup(help_string, context.bot, update, reply_markup)
 
 
-'''
+"""
 botcmds = [
-    (f"{BotCommands.HelpCommand}", "Dapatkan bantuan terperinci"),
-    (f"{BotCommands.MirrorCommand}", "Mulai mirroring"),
-    (f"{BotCommands.UnzipMirrorCommand}", "Ekstrak file"),
-    (f"{BotCommands.ZipMirrorCommand}", "Mulai mirroring dan unggah sebagai .zip"),
-    (f"{BotCommands.CloneCommand}", "Salin file/folder ke Drive"),
-    (f"{BotCommands.CountCommand}", "Hitung file/folder dari link Drive"),
-    (f"{BotCommands.DeleteCommand}", "Hapus file dari drive"),
-    (f'{BotCommands.QbMirrorCommand}','Mulai Mencerminkan menggunakan qBittorrent'),
-    (f'{BotCommands.QbZipMirrorCommand}','Mulai mirroring dan unggah sebagai .zip menggunakan qb'),
-    (f'{BotCommands.QbUnzipMirrorCommand}','Ekstrak file melalui qBitorrent'),
-    (f"{BotCommands.WatchCommand}", "Mirror video/audio menggunakan YouTube-DL"),
-    (f'{BotCommands.ZipWatchCommand}','Cerminkan tautan daftar putar Youtube sebagai .zip'),
-    (f"{BotCommands.CancelMirror}", "Batalkan tugas"),
-    (f"{BotCommands.CancelAllCommand}", "Batalkan semua tugas"),
-    (f"{BotCommands.ListCommand}", "Mencari file dalam drive"),
-    (f"{BotCommands.StatusCommand}", "Dapatkan pesan status cermin"),
-    (f"{BotCommands.StatsCommand}", "Statistik Penggunaan Bot."),
-    (f"{BotCommands.PingCommand}", "berlomba cepat koneksi."),
-    (f"{BotCommands.RestartCommand}", "Mulai ulang bot. [hanya owner/sudo]"),
-    (f"{BotCommands.LogCommand}", "Dapatkan Log Bot [hanya owner/sudo]"),
-    (
-        f"{BotCommands.MediaInfoCommand}",
-        "Dapatkan info detail tentang media yang dibalas",
-    ),
-]
-'''
+
+        (f'{BotCommands.MirrorCommand}', 'Start Mirroring'),
+        (f'{BotCommands.ZipMirrorCommand}','Start mirroring and upload as .zip'),
+        (f'{BotCommands.UnzipMirrorCommand}','Extract files'),
+        (f'{BotCommands.QbMirrorCommand}','Start Mirroring using qBittorrent'),
+        (f'{BotCommands.QbZipMirrorCommand}','Start mirroring and upload as .zip using qb'),
+        (f'{BotCommands.QbUnzipMirrorCommand}','Extract files using qBitorrent'),
+        (f'{BotCommands.CloneCommand}','Copy file/folder to Drive'),
+        (f'{BotCommands.CountCommand}','Count file/folder of Drive link'),
+        (f'{BotCommands.DeleteCommand}','Delete file from Drive'),
+        (f'{BotCommands.WatchCommand}','Mirror Youtube-dl support link'),
+        (f'{BotCommands.ZipWatchCommand}','Mirror Youtube playlist link as .zip'),
+        (f'{BotCommands.CancelMirror}','Cancel a task'),
+        (f'{BotCommands.CancelAllCommand}','Cancel all tasks'),
+        (f'{BotCommands.ListCommand}','Searches files in Drive'),
+        (f'{BotCommands.StatusCommand}','Get Mirror Status message'),
+        (f'{BotCommands.StatsCommand}','Bot Usage Stats'),
+        (f'{BotCommands.PingCommand}','Ping the Bot'),
+        (f'{BotCommands.RestartCommand}','Restart the bot [owner/sudo only]'),
+        (f'{BotCommands.LogCommand}','Get the Bot Log [owner/sudo only]'),
+        (f'{BotCommands.HelpCommand}','Get Detailed Help')
+    ]
+"""
 
 
 def main():
     fs_utils.start_cleanup()
     if IS_VPS:
-        asyncio.get_event_loop().run_until_complete(start_server_async(PORT))
+        asyncio.new_event_loop().run_until_complete(start_server_async(PORT))
     # Check if the bot is restarting
     if os.path.isfile(".restartmsg"):
         with open(".restartmsg") as f:
             chat_id, msg_id = map(int, f)
-        bot.edit_message_text("Berhasil memulai kembali!", chat_id, msg_id)
+        bot.edit_message_text("Restarted successfully!", chat_id, msg_id)
         os.remove(".restartmsg")
     elif OWNER_ID:
         try:
-            text = "<b>Bot Mulai ulang!</b>"
+            text = "<b>Bot Restarted!</b>"
             bot.sendMessage(chat_id=OWNER_ID, text=text, parse_mode=ParseMode.HTML)
             if AUTHORIZED_CHATS:
                 for i in AUTHORIZED_CHATS:

@@ -1,11 +1,17 @@
-from .download_helper import DownloadHelper
-import time
-from yt_dlp import YoutubeDL, DownloadError
-from bot import download_dict_lock, download_dict
-from ..status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
 import logging
+import random
 import re
+import string
 import threading
+import time
+
+from yt_dlp import DownloadError, YoutubeDL
+
+from bot import download_dict, download_dict_lock
+from bot.helper.telegram_helper.message_utils import sendStatusMessage
+
+from ..status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
+from .download_helper import DownloadHelper
 
 LOGGER = logging.getLogger(__name__)
 
@@ -15,14 +21,13 @@ class MyLogger:
         self.obj = obj
 
     def debug(self, msg):
-        LOGGER.debug(msg)
-        # Hack to fix changing changing extension
-        video = re.search(r'.Merger..Merging formats into..(.*?).$', msg)
-        audio = re.search(r'.ExtractAudio..Destination..(.*?)$', msg)
-        if video and audio and not self.obj.is_playlist:
-            newname = video.group(1) and audio.group(1)
-            newname = newname.split("/")
-            newname = newname[-1]
+        # Hack to fix changing extension
+        match = re.search(r".Merger..Merging formats into..(.*?).$", msg)  # To mkv
+        if not match and not self.obj.is_playlist:
+            match = re.search(r".ExtractAudio..Destination..(.*?)$", msg)  # To mp3
+        if match and not self.obj.is_playlist:
+            newname = match.group(1)
+            newname = newname.split("/")[-1]
             self.obj.name = newname
 
     @staticmethod
@@ -41,21 +46,24 @@ class YoutubeDLHelper(DownloadHelper):
         self.__start_time = time.time()
         self.__listener = listener
         self.__gid = ""
-        self.opts = {
-            'progress_hooks': [self.__onDownloadProgress],
-            'logger': MyLogger(self),
-            'usenetrc': True,
-            'cookiefile': 'cookies.txt',
-            'geo_bypass': True,
-        }
         self.__download_speed = 0
         self.downloaded_bytes = 0
         self.size = 0
         self.is_playlist = False
         self.last_downloaded = 0
         self.is_cancelled = False
-        self.vid_id = ''
+        self.downloading = False
         self.__resource_lock = threading.RLock()
+        self.opts = {
+            "progress_hooks": [self.__onDownloadProgress],
+            "logger": MyLogger(self),
+            "usenetrc": True,
+            "continuedl": True,
+            "embedsubtitles": True,
+            "prefer_ffmpeg": True,
+            "skip_playlist_after_errors": 10,
+            "cookiefile": "cookies.txt",
+        }
 
     @property
     def download_speed(self):
@@ -68,37 +76,37 @@ class YoutubeDLHelper(DownloadHelper):
             return self.__gid
 
     def __onDownloadProgress(self, d):
+        self.downloading = True
         if self.is_cancelled:
             raise ValueError("Cancelling Download..")
-        if d['status'] == "finished":
+        if d["status"] == "finished":
             if self.is_playlist:
                 self.last_downloaded = 0
-        elif d['status'] == "downloading":
+        elif d["status"] == "downloading":
             with self.__resource_lock:
-                self.__download_speed = d['speed']
+                self.__download_speed = d["speed"]
                 try:
-                    tbyte = d['total_bytes']
+                    tbyte = d["total_bytes"]
                 except KeyError:
-                    tbyte = d['total_bytes_estimate']
+                    tbyte = d["total_bytes_estimate"]
                 if self.is_playlist:
-                    progress = d['downloaded_bytes'] / tbyte
-                    chunk_size = d['downloaded_bytes'] - self.last_downloaded
-                    self.last_downloaded = tbyte * progress
+                    downloadedBytes = d["downloaded_bytes"]
+                    chunk_size = downloadedBytes - self.last_downloaded
+                    self.last_downloaded = downloadedBytes
                     self.downloaded_bytes += chunk_size
                 else:
                     self.size = tbyte
-                    self.downloaded_bytes = d['downloaded_bytes']
+                    self.downloaded_bytes = d["downloaded_bytes"]
                 try:
-                    self.progress = (
-                        self.downloaded_bytes / self.size
-                    ) * 100
+                    self.progress = (self.downloaded_bytes / self.size) * 100
                 except ZeroDivisionError:
                     pass
 
     def __onDownloadStart(self):
         with download_dict_lock:
-            download_dict[self.__listener.uid
-                          ] = YoutubeDLDownloadStatus(self, self.__listener)
+            download_dict[self.__listener.uid] = YoutubeDLDownloadStatus(
+                self, self.__listener
+            )
 
     def __onDownloadComplete(self):
         self.__listener.onDownloadComplete()
@@ -106,79 +114,78 @@ class YoutubeDLHelper(DownloadHelper):
     def onDownloadError(self, error):
         self.__listener.onDownloadError(error)
 
-    def extractMetaData(self, link, qual, name):
-        if "hotstar" in link or "sonyliv" in link:
-            self.opts['geo_bypass_country'] = 'IN'
+    def extractMetaData(self, link, name, get_info=False):
 
+        if get_info:
+            self.opts["playlist_items"] = "0"
         with YoutubeDL(self.opts) as ydl:
             try:
                 result = ydl.extract_info(link, download=False)
-                name = ydl.prepare_filename(result) if name == "" else name
-                # noobway hack for changing extension after converting to mp3
-                if qual == "audio":
-                    name = name.replace(
-                        ".mp4", ".mp3").replace(
-                        ".webm", ".mp3")
+                if get_info:
+                    return result
+                realName = ydl.prepare_filename(result)
             except DownloadError as e:
+                if get_info:
+                    raise e
                 self.onDownloadError(str(e))
                 return
-        if result.get('direct'):
-            return None
-        if 'entries' in result:
-            video = result['entries'][0]
-            for v in result['entries']:
-                if v and v.get('filesize'):
-                    self.size += float(v['filesize'])
-            # For playlists, ydl.prepare-filename returns the following format:
-            # <Playlist Name>-<Id of playlist>.NA
-            self.name = name.split(f"-{result['id']}")[0]
-            self.vid_id = video.get('id')
+
+        if "entries" in result:
+            for v in result["entries"]:
+                try:
+                    self.size += v["filesize_approx"]
+                except KeyError:
+                    pass
             self.is_playlist = True
+            if name == "":
+                self.name = str(realName).split(f" [{result['id']}]")[0]
+            else:
+                self.name = name
         else:
-            video = result
-            if video.get('filesize'):
-                self.size = float(video.get('filesize'))
-            self.name = name
-            self.vid_id = video.get('id')
-        return video
+            ext = realName.split(".")[-1]
+            if name == "":
+                self.name = str(realName).split(f" [{result['id']}]")[0] + "." + ext
+            else:
+                self.name = f"{name}.{ext}"
 
     def __download(self, link):
         try:
             with YoutubeDL(self.opts) as ydl:
-                try:
-                    ydl.download([link])
-                except DownloadError as e:
-                    self.onDownloadError(str(e))
-                    return
-            self.__onDownloadComplete()
+                ydl.download([link])
+                self.__onDownloadComplete()
+        except DownloadError as e:
+            self.onDownloadError(str(e))
         except ValueError:
-            LOGGER.info("Download Cancelled by User!")
             self.onDownloadError("Download Cancelled by User!")
 
-    def add_download(self, link, path, qual, name):
-        pattern = '^.*(youtu\\.be\\/|youtube.com\\/)(playlist?)'
-        if re.match(pattern, link):
-            self.opts['ignoreerrors'] = True
+    def add_download(self, link, path, name, qual):
+        if "hotstar" in link or "sonyliv" in link:
+            self.opts["geo_bypass_country"] = "IN"
+        self.__gid = "".join(
+            random.SystemRandom().choices(string.ascii_letters + string.digits, k=10)
+        )
         self.__onDownloadStart()
-        self.extractMetaData(link, qual, name)
-        LOGGER.info(f"Downloading with YT-DL: {link}")
-        self.__gid = f"{self.vid_id}{self.__listener.uid}"
-        if qual == "audio":
-            self.opts['format'] = 'bestaudio/best'
-            self.opts['postprocessors'] = [
+        sendStatusMessage(self.__listener.update, self.__listener.bot)
+        self.opts["format"] = qual
+        if qual == "ba/b":
+            self.opts["postprocessors"] = [
                 {
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '320',
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "340",
                 }
             ]
-        else:
-            self.opts['format'] = qual
+        LOGGER.info(f"Downloading with YT-DL: {link}")
+        self.extractMetaData(link, name)
+        if self.is_cancelled:
+            return
         if not self.is_playlist:
-            self.opts['outtmpl'] = f"{path}/{self.name}"
+            self.opts["outtmpl"] = f"{path}/{self.name}"
         else:
-            self.opts['outtmpl'] = f"{path}/{self.name}/%(title)s-%(ext)s"
+            self.opts["outtmpl"] = f"{path}/{self.name}/%(title)s.%(ext)s"
         self.__download(link)
 
     def cancel_download(self):
         self.is_cancelled = True
+        if not self.downloading:
+            self.onDownloadError("Download Cancelled by User!")

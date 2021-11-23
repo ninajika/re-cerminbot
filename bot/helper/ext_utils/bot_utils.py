@@ -1,18 +1,22 @@
-import logging
 import math
 import re
+import shutil
 import threading
 import time
 
+import psutil
 from telegram import InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
 
-from bot import (FINISHED_PROGRESS_STR, STATUS_LIMIT, UNFINISHED_PROGRESS_STR,
-                 dispatcher, download_dict, download_dict_lock)
+from bot import (
+    STATUS_LIMIT,
+    botStartTime,
+    dispatcher,
+    download_dict,
+    download_dict_lock,
+)
 from bot.helper.telegram_helper import button_build, message_utils
 from bot.helper.telegram_helper.bot_commands import BotCommands
-
-LOGGER = logging.getLogger(__name__)
 
 MAGNET_REGEX = r"magnet:\?xt=urn:btih:[a-zA-Z0-9]*"
 
@@ -28,16 +32,13 @@ class MirrorStatus:
     STATUS_CLONING = "Cloning...♻️"
     STATUS_WAITING = "Queued...📝"
     STATUS_FAILED = "Failed 🚫. Cleaning Download..."
-    STATUS_PAUSE = "Paused...⭕️"
+    STATUS_PAUSE = "Paused...⛔️"
     STATUS_ARCHIVING = "Archiving...🔐"
     STATUS_EXTRACTING = "Extracting...📂"
     STATUS_SPLITTING = "Splitting...✂️"
 
 
-PROGRESS_MAX_SIZE = 100 // 8
-# PROGRESS_INCOMPLETE = ['▏', '▎', '▍', '▌', '▋', '▊', '▉']
-
-SIZE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+SIZE_UNITS = ["B", "KB", "MB", "GB", "TB", "PB"]
 
 
 class setInterval:
@@ -60,15 +61,15 @@ class setInterval:
 
 def get_readable_file_size(size_in_bytes) -> str:
     if size_in_bytes is None:
-        return '0B'
+        return "0B"
     index = 0
     while size_in_bytes >= 1024:
         size_in_bytes /= 1024
         index += 1
     try:
-        return f'{round(size_in_bytes, 2)}{SIZE_UNITS[index]}'
+        return f"{round(size_in_bytes, 2)}{SIZE_UNITS[index]}"
     except IndexError:
-        return 'File too large'
+        return "File too large"
 
 
 def getDownloadByGid(gid):
@@ -108,36 +109,34 @@ def getAllDownload():
 
 
 def get_progress_bar_string(status):
-    completed = status.processed_bytes() / 9
-    total = status.size_raw() / 9
+    completed = status.processed_bytes() / 8
+    total = status.size_raw() / 8
     p = 0 if total == 0 else round(completed * 100 / total)
     p = min(max(p, 0), 100)
-    cFull = p // 9
-    cPart = p % 9 - 1
-    p_str = FINISHED_PROGRESS_STR * cFull
-    if cPart >= 0:
-        # p_str += PROGRESS_INCOMPLETE[cPart]
-        p_str += FINISHED_PROGRESS_STR
-    p_str += UNFINISHED_PROGRESS_STR * (PROGRESS_MAX_SIZE - cFull)
+    cFull = p // 8
+    p_str = "■" * cFull
+    p_str += "□" * (12 - cFull)
     p_str = f"[{p_str}]"
     return p_str
 
 
-def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
+def get_readable_message():
     with download_dict_lock:
         msg = ""
-        start = 0
+        START = 0
+        dlspeed_bytes = 0
+        uldl_bytes = 0
         if STATUS_LIMIT is not None:
             dick_no = len(download_dict)
             global pages
             pages = math.ceil(dick_no / STATUS_LIMIT)
             if pages != 0 and PAGE_NO > pages:
-                globals()['COUNT'] -= STATUS_LIMIT
-                globals()['PAGE_NO'] -= 1
-            start = COUNT
-        for index, download in enumerate(list(download_dict.values())[start:], start=1):
-            msg += f"<b>Namafile:</b> <code>{download.name()}</code>"
-            msg += f"\n<b>Status: </b> <i>{download.status()}</i>"
+                globals()["COUNT"] -= STATUS_LIMIT
+                globals()["PAGE_NO"] -= 1
+            START = COUNT
+        for index, download in enumerate(list(download_dict.values())[START:], start=1):
+            msg += f"<b>Name:</b> <code>{download.name()}</code>"
+            msg += f"\n<b>Status:</b> <i>{download.status()}</i>"
             if download.status() not in [
                 MirrorStatus.STATUS_ARCHIVING,
                 MirrorStatus.STATUS_EXTRACTING,
@@ -145,39 +144,67 @@ def get_readable_message():  # sourcery no-metrics skip: remove-redundant-pass
             ]:
                 msg += f"\n{get_progress_bar_string(download)} {download.progress()}"
                 if download.status() == MirrorStatus.STATUS_CLONING:
-                    msg += f"\n<b>Kloning:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()} "
+                    msg += f"\n<b>Cloned:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 elif download.status() == MirrorStatus.STATUS_UPLOADING:
-                    msg += f"\n<b>Diunggah:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
+                    msg += f"\n<b>Uploaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
                 else:
-                    msg += f"\n<b>Diunduh:</b> {get_readable_file_size(download.processed_bytes())} dari {download.size()}"
-                msg += f"\n<b>Kecepatan:</b> {download.speed()} <b>Kapan:</b> {download.eta()}"
+                    msg += f"\n<b>Downloaded:</b> {get_readable_file_size(download.processed_bytes())} of {download.size()}"
+                msg += (
+                    f"\n<b>Speed:</b> {download.speed()} | <b>ETA:</b> {download.eta()}"
+                )
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.aria_download().num_seeders}" \
-                           f" | <b>Peers:</b> {download.aria_download().connections}"
+                    msg += (
+                        f"\n<b>Seeders:</b> {download.aria_download().num_seeders}"
+                        f" | <b>Peers:</b> {download.aria_download().connections}"
+                    )
                 except:
                     pass
                 try:
-                    msg += f"\n<b>Seeders:</b> {download.torrent_info().num_seeds}" \
-                           f" | <b>Leechers:</b> {download.torrent_info().num_leechs}" \
-
+                    msg += (
+                        f"\n<b>Seeders:</b> {download.torrent_info().num_seeds}"
+                        f" | <b>Leechers:</b> {download.torrent_info().num_leechs}"
+                    )
                 except:
                     pass
-                msg += f"\n<b>Pengguna:</b> <a href='tg://user?id={download.message.from_user.id}'>{download.message.from_user.first_name}</a>"
-                msg += f"\n<b>Untuk membatalkan:</b> <code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+                msg += f"\n<code>/{BotCommands.CancelMirror} {download.gid()}</code>"
+            else:
+                msg += f"\n<b>Size: </b>{download.size()}"
             msg += "\n\n"
             if STATUS_LIMIT is not None and index == STATUS_LIMIT:
                 break
+        total, used, free = shutil.disk_usage(".")
+        free = get_readable_file_size(free)
+        currentTime = get_readable_time(time.time() - botStartTime)
+        bmsg = f"<b>CPU:</b> {psutil.cpu_percent()}% | <b>FREE:</b> {free}"
+        for download in list(download_dict.values()):
+            speedy = download.speed()
+            if download.status() == MirrorStatus.STATUS_DOWNLOADING:
+                if "K" in speedy:
+                    dlspeed_bytes += float(speedy.split("K")[0]) * 1024
+                elif "M" in speedy:
+                    dlspeed_bytes += float(speedy.split("M")[0]) * 1048576
+            if download.status() == MirrorStatus.STATUS_UPLOADING:
+                if "KB/s" in speedy:
+                    uldl_bytes += float(speedy.split("K")[0]) * 1024
+                elif "MB/s" in speedy:
+                    uldl_bytes += float(speedy.split("M")[0]) * 1048576
+        dlspeed = get_readable_file_size(dlspeed_bytes)
+        ulspeed = get_readable_file_size(uldl_bytes)
+        bmsg += (
+            f"\n<b>RAM:</b> {psutil.virtual_memory().percent}% | <b>UPTIME:</b> {currentTime}"
+            f"\n<b>DL:</b> {dlspeed}/s | <b>UL:</b> {ulspeed}/s"
+        )
         if STATUS_LIMIT is not None and dick_no > STATUS_LIMIT:
-            msg += f"<b>Halaman:</b> {PAGE_NO}/{pages} | <b>Tugas:</b> {dick_no}\n"
+            msg += f"<b>Page:</b> {PAGE_NO}/{pages} | <b>Tasks:</b> {dick_no}\n"
             buttons = button_build.ButtonMaker()
-            buttons.sbutton("Sebelumnya", "pre")
-            buttons.sbutton("Selanjutnya", "nex")
+            buttons.sbutton("Previous", "pre")
+            buttons.sbutton("Next", "nex")
             button = InlineKeyboardMarkup(buttons.build_menu(2))
-            return msg, button
-        return msg, ""
+            return msg + bmsg, button
+        return msg + bmsg, ""
 
 
-def flip(update, context):
+def turn(update, context):
     query = update.callback_query
     query.answer()
     global COUNT, PAGE_NO
@@ -197,22 +224,23 @@ def flip(update, context):
             PAGE_NO -= 1
     message_utils.update_all_messages()
 
+
 def get_readable_time(seconds: int) -> str:
-    result = ''
+    result = ""
     (days, remainder) = divmod(seconds, 86400)
     days = int(days)
     if days != 0:
-        result += f'{days}d'
+        result += f"{days}d"
     (hours, remainder) = divmod(remainder, 3600)
     hours = int(hours)
     if hours != 0:
-        result += f'{hours}h'
+        result += f"{hours}h"
     (minutes, seconds) = divmod(remainder, 60)
     minutes = int(minutes)
     if minutes != 0:
-        result += f'{minutes}m'
+        result += f"{minutes}m"
     seconds = int(seconds)
-    result += f'{seconds}s'
+    result += f"{seconds}s"
     return result
 
 
@@ -248,6 +276,7 @@ def new_thread(fn):
     """To use as decorator to make a function call threaded.
     Needs import
     from threading import Thread"""
+
     def wrapper(*args, **kwargs):
         thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
         thread.start()
@@ -256,7 +285,7 @@ def new_thread(fn):
     return wrapper
 
 
-next_handler = CallbackQueryHandler(flip, pattern="nex", run_async=True)
-previous_handler = CallbackQueryHandler(flip, pattern="pre", run_async=True)
+next_handler = CallbackQueryHandler(turn, pattern="nex", run_async=True)
+previous_handler = CallbackQueryHandler(turn, pattern="pre", run_async=True)
 dispatcher.add_handler(next_handler)
 dispatcher.add_handler(previous_handler)

@@ -1,5 +1,6 @@
-from bot import aria2, DOWNLOAD_DIR, LOGGER
+from bot import DOWNLOAD_DIR, LOGGER, aria2
 from bot.helper.ext_utils.bot_utils import MirrorStatus
+
 from .status import Status
 
 
@@ -10,7 +11,6 @@ def get_download(gid):
 class AriaDownloadStatus(Status):
     def __init__(self, gid, listener):
         super().__init__()
-        self.upload_name = None
         self.__gid = gid
         self.__download = get_download(self.__gid)
         self.__uid = listener.uid
@@ -91,9 +91,9 @@ class AriaDownloadStatus(Status):
             return
         if len(download.followed_by_ids) != 0:
             downloads = aria2.get_downloads(download.followed_by_ids)
-            self.__listener.onDownloadError('Download stopped by user!')
+            self.__listener.onDownloadError("Download stopped by user!")
             aria2.remove(downloads, force=True)
             aria2.remove([download], force=True)
             return
-        self.__listener.onDownloadError('Download stopped by user!')
+        self.__listener.onDownloadError("Download stopped by user!")
         aria2.remove([download], force=True)

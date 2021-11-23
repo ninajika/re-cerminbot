@@ -1,11 +1,13 @@
 import logging
 import threading
 import time
-from bot import LOGGER, download_dict, download_dict_lock, app, STOP_DUPLICATE
-from .download_helper import DownloadHelper
-from ..status_utils.telegram_download_status import TelegramDownloadStatus
-from bot.helper.telegram_helper.message_utils import sendMarkup, sendStatusMessage
+
+from bot import LOGGER, STOP_DUPLICATE, app, download_dict, download_dict_lock
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
+from bot.helper.telegram_helper.message_utils import sendMarkup, sendStatusMessage
+
+from ..status_utils.telegram_download_status import TelegramDownloadStatus
+from .download_helper import DownloadHelper
 
 global_lock = threading.Lock()
 GLOBAL_GID = set()
@@ -35,8 +37,9 @@ class TelegramDownloadHelper(DownloadHelper):
 
     def __onDownloadStart(self, name, size, file_id):
         with download_dict_lock:
-            download_dict[self.__listener.uid
-                          ] = TelegramDownloadStatus(self, self.__listener)
+            download_dict[self.__listener.uid] = TelegramDownloadStatus(
+                self, self.__listener
+            )
         with global_lock:
             GLOBAL_GID.add(file_id)
         with self.__resource_lock:
@@ -47,7 +50,7 @@ class TelegramDownloadHelper(DownloadHelper):
 
     def __onDownloadProgress(self, current, total):
         if self.__is_cancelled:
-            self.__onDownloadError('Cancelled by user!')
+            self.__onDownloadError("Cancelled by user!")
             self._bot.stop_transmission()
             return
         with self.__resource_lock:
@@ -77,7 +80,7 @@ class TelegramDownloadHelper(DownloadHelper):
         if download is not None:
             self.__onDownloadComplete()
         elif not self.__is_cancelled:
-            self.__onDownloadError('Internal error occurred')
+            self.__onDownloadError("Internal error occurred")
 
     def add_download(self, message, path, filename):
         _message = self._bot.get_messages(
@@ -91,8 +94,7 @@ class TelegramDownloadHelper(DownloadHelper):
                 break
         if media is not None:
             with global_lock:
-                # For avoiding locking the thread lock for long time
-                # unnecessarily
+                # For avoiding locking the thread lock for long time unnecessarily
                 download = media.file_id not in GLOBAL_GID
             if filename == "":
                 name = media.file_name
@@ -102,29 +104,26 @@ class TelegramDownloadHelper(DownloadHelper):
 
             if download:
                 if STOP_DUPLICATE and not self.__listener.isLeech:
-                    LOGGER.info('Checking File/Folder if already in Drive...')
+                    LOGGER.info("Checking File/Folder if already in Drive...")
                     gd = GoogleDriveHelper()
                     smsg, button = gd.drive_list(name, True, True)
                     if smsg:
                         sendMarkup(
-                            "File/folder sudah tersedia di drive.\nBerikut adalah hasil pencarian:",
+                            "File/Folder is already available in Drive.\nHere are the search results:",
                             self.__listener.bot,
                             self.__listener.update,
-                            button)
+                            button,
+                        )
                         return
                 sendStatusMessage(self.__listener.update, self.__listener.bot)
                 self.__onDownloadStart(name, media.file_size, media.file_id)
-                LOGGER.info(
-                    f'Downloading Telegram file with id: {media.file_id}'
-                )
-                threading.Thread(target=self.__download,
-                                 args=(_message, path)).start()
+                LOGGER.info(f"Downloading Telegram file with id: {media.file_id}")
+                threading.Thread(target=self.__download, args=(_message, path)).start()
             else:
-                self.__onDownloadError('File sudah diunduh!')
+                self.__onDownloadError("File already being downloaded!")
         else:
-            self.__onDownloadError(
-                'Tidak ada dokumen dalam pesan yang dijawab')
+            self.__onDownloadError("No document in the replied message")
 
     def cancel_download(self):
-        LOGGER.info(f'Cancelling download on user request: {self.gid}')
+        LOGGER.info(f"Cancelling download on user request: {self.gid}")
         self.__is_cancelled = True
