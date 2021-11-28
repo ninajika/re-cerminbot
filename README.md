@@ -2,7 +2,7 @@
 
 Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 
-## This repo has been discontinue
+## Rarely Maintaince
 
 # re-mirrorbot
 ![GitHub forks](https://img.shields.io/github/forks/Ncode2014/re-mirrorbot?color=green&style=flat)
@@ -24,7 +24,6 @@ Source image from this [link](https://unsplash.com/photos/2m6wr8qMiio)
 - you can change yt-dlp or youtube-dl because the docker has been included to dependency
 - still support and keep using latest updated mirror-leach-telegram-bot
 - Custom Progress bar (from slam-mirrorbot)
-- Supported arm64
 - dropped using button template (cli still supported or using whatever method)
 
 ## Additional Features On [slam-mirrorbot](https://github.com/breakdowns/slam-mirrorbot) and [mirror-leech-telegram-bot](https://github.com/anasty17/mirror-leech-telegram-bot)
