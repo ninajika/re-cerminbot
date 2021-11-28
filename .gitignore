@@ -4,12 +4,12 @@ config.env
 downloads/*
 download/*
 data*
-heroku-guide.md
 .vscode
 .idea
 build.sh
 *.json
 *.pickle
+setup.sh
 authorized_chats.txt
 log.txt
 accounts/*
