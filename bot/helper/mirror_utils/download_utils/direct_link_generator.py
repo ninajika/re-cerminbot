@@ -91,10 +91,6 @@ def direct_link_generator(link: str):  # sourcery no-metrics
         return racaty(link)
     elif '1fichier.com' in link:
         return fichier(link)
-    elif 'https://sourceforge.net' in link:
-        return sourceforge(link)
-    elif 'https://master.dl.sourceforge.net' in link:
-        return sourceforge2(link)
     elif 'solidfiles.com' in link:
         return solidfiles(link)
     elif "dropbox.com/s/" in link:
@@ -192,31 +188,6 @@ def yandex_disk(url: str) -> str:
     except KeyError:
         raise DirectDownloadLinkException(
             "ERROR: File not found/Download limit reached\n")
-
-
-def sourceforge(url: str) -> str:
-    """ SourceForge direct links generator
-    Based on https://github.com/REBEL75/REBELUSERBOT """
-    try:
-        link = re.findall(r"\bhttps?://sourceforge\.net\S+", url)[0]
-    except IndexError:
-        return "`No SourceForge links found`\n"
-    file_path = re.findall(r"files(.*)/download", link)[0]
-    project = re.findall(r"projects?/(.*?)/files", link)[0]
-    mirrors = (
-        f"https://sourceforge.net/settings/mirror_choices?"
-        f"projectname={project}&filename={file_path}"
-    )
-    page = BeautifulSoup(requests.get(mirrors).content, "html.parser")
-    info = page.find("ul", {"id": "mirrorList"}).findAll("li")
-    for mirror in info[1:]:
-        dl_url = f'https://{mirror["id"]}.dl.sourceforge.net/project/{project}/{file_path}?viasf=1'
-    return dl_url
-
-
-def sourceforge2(url: str) -> str:
-    """ Sourceforge Master.dl bypass """
-    return f"{url}" + "?viasf=1"
 
 
 def anonfiles(url: str) -> str:
